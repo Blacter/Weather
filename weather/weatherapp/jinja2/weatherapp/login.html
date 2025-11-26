@@ -1,0 +1,37 @@
+{% extends 'weatherapp/base.html' %}
+
+{% block title %}
+Login
+{% endblock title %}
+
+{% block header %}
+Login
+{% endblock header %}
+
+{% block content %}
+Login
+<form action="{{ url('login') }}" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    <div class="form-error">{{login_form.non_field_errors()}}</div>
+    <div class="input-form">        
+        <div class="form-row">
+            <label for="{{login_form.user_login.id_for_label}}">{{login_form.user_login.label}}</label>
+            {{login_form.user_login}}
+            {% if login_form.user_login.errors %}
+            <div class="form-error">Ошибка в логине: {{login_form.user_login.errors.as_text()}}</div>
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="{{login_form.user_password.id_for_label}}">{{login_form.user_password.label}}</label>
+            {{login_form.user_password}}
+            {% if login_form.user_password.errors %}
+                <div class="form-error">Ошибка в пароле: {{login_form.user_password.errors.as_text()}}</div>
+            {% endif %}
+        </div>
+    </div>
+    <input type="submit">
+</form>
+{% if is_error %}
+<div class="error_description">{{ error_description }}</div>
+{% endif %}
+{% endblock content %}

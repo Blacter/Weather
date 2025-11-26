@@ -23,10 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-tf@_7v6l+&4nw_v5+o3^*0xz%hs(3b)5*9ll(=5a=-@ryo6^)*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1'] # 
 
+CSRF_TRUSTED_ORIGINS = ['http://localhost']
 
 # Application definition
 
@@ -37,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'weatherapp',
+    'weatherapp.apps.WeatherappConfig',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,14 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'weather.urls'
 
 TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'environment': 'weather.jinja2.environment'
+        }
+    },    
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],

@@ -1,0 +1,39 @@
+{% extends 'weatherapp/base.html' %}
+
+{% block title %}
+Sign Up
+{% endblock title %}
+
+{% block header %}
+Sign Up
+{% endblock header %}
+
+{% block content %}
+Sign Up
+<form action="{{ url('signup') }}" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    <div class="form-error">{{signup_form.non_field_errors()}}</div>
+    <div class="input-form">        
+        <div class="form-row">
+            <label for="{{signup_form.user_login.id_for_label}}">{{signup_form.user_login.label}}</label>
+            {{signup_form.user_login}}
+            <div class="form-error">{{signup_form.user_login.errors}}</div>
+        </div>
+        <div class="form-row">
+            <label for="{{signup_form.user_password.id_for_label}}">{{signup_form.user_password.label}}</label>
+            {{signup_form.user_password}}
+            {% if signup_form.user_password.errors %}
+                <div class="form-error">Ошибка в пароле: {{signup_form.user_password.errors.as_text()}}</div>
+            {% endif %}
+        </div>
+        <div class="form-row">
+            <label for="{{signup_form.user_password_confirm.id_for_label}}">{{signup_form.user_password_confirm.label}}</label>
+            {{signup_form.user_password_confirm}}
+            {% if signup_form.user_password_confirm.errors %}
+                <div class="form-error">Ошибка в пароле: {{signup_form.user_password_confirm.errors.as_text()}}</div>
+            {% endif %}
+        </div>
+    </div>
+    <input type="submit">
+</form>
+{% endblock content %}
