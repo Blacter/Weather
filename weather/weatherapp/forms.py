@@ -39,19 +39,38 @@ class LoginForm(forms.Form):
 
 class SignUpForm(forms.Form):
     def clean(self) -> dict[str, Any]:
-        cleaned_data: dict[str, Any] = super().clean()
-        print(f'{cleaned_data.keys()=}')
-        user_password: str | None = cleaned_data.get('user_password')
-        user_password_confirm: str | None = cleaned_data.get('user_password_confirm')
+        self.cleaned_data: dict[str, Any] = super().clean()
+               
+        self.check_password_confirmed()
+        self.check_user_not_exists()
+        
+        # TODO: check unique login.
+        # TODO: [check password reliability]
+
+        return self.cleaned_data
+    
+    def check_password_confirmed(self) -> None:
+        user_password: str | None = self.cleaned_data.get('user_password')
+        user_password_confirm: str | None = self.cleaned_data.get('user_password_confirm')
 
         if user_password is not None and user_password_confirm is not None \
             and user_password != user_password_confirm:
             raise ValidationError(FORM_PRINTS['password_confirm_error_msg'], )
         
-        # TODO: check unique login.
-        # TODO: [check password reliability]
-
-        return cleaned_data
+    def check_user_not_exists(self) -> None:
+        if self.is_user_exists():
+            raise ValidationError(FORM_PRINTS['user_already_exists_error'])
+        
+    def is_user_exists(self) -> bool:
+        try:
+            users_with_the_login_count = len(User.objects.filter(login = self.cleaned_data['user_login']))
+            print(f'{users_with_the_login_count=}')
+        except:
+            raise
+        
+        if users_with_the_login_count >= 1:
+            return True
+        return False
 
     user_login = forms.CharField(
         min_length = FORM_PRINTS['login_min_length'],

@@ -1,9 +1,9 @@
 from string import Template
 
 LOGIN_MIN_LENGTH: int = 4
-LOGIN_MAX_LENGTH: int = 10
+LOGIN_MAX_LENGTH: int = 20
 PASSWORD_MIN_LENGTH: int = 4
-PASSWORD_MAX_LENGTH: int = 10
+PASSWORD_MAX_LENGTH: int = 20
 
 FORM_PRINTS: dict[str, str|int] = {
     'login_contains_wrong_characters': 'недопустимые символы в логине.',
@@ -23,6 +23,7 @@ FORM_PRINTS: dict[str, str|int] = {
     'password_required_error_msg': 'обязательно для заполнения.',
     
     'password_confirm_error_msg': 'пароли не совпадают.',
+    'user_already_exists_error': 'пользователь с данным логином уже существует.',
     # '': '',
 }
 
