@@ -2,10 +2,11 @@ import re
 from typing import Any
 
 from django import forms
+from django.contrib.auth.hashers import check_password
 from django.core.validators import RegexValidator
 from django.forms import ValidationError
-from .settings import FORM_PRINTS
 
+from .settings import FORM_PRINTS
 from .models import User
 
 acceptable_characters = RegexValidator(
@@ -13,6 +14,26 @@ acceptable_characters = RegexValidator(
 
 
 class LoginForm(forms.Form):
+    def clean(self) -> dict[str, Any]:
+        self.cleaned_data = super().clean()
+        self.get_user_with_login()
+        self.check_password()
+        return self.cleaned_data
+
+    def get_user_with_login(self) -> None:
+        try:            
+            self.user: User  = User.objects.get(login = self.cleaned_data.get('user_login'))
+        except User.DoesNotExist:
+            raise ValidationError('The user with login does not exist.')
+
+    def check_password(self) -> None:
+        user_password: str | None = self.cleaned_data.get('user_password')
+        if user_password is None:
+            return
+        user_password_hash: str = self.user.password
+        if not check_password(user_password, user_password_hash):            
+            raise ValidationError('Wrong password.')
+
     user_login = forms.CharField(
         min_length=FORM_PRINTS['login_min_length'],
         max_length=FORM_PRINTS['login_max_length'],

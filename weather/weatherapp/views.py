@@ -30,13 +30,16 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def login(request: HttpRequest) -> HttpResponse:
+    if is_loged_in(request):
+        home_redirect = get_home_url()
+        return redirect(home_redirect)
+    
     if request.POST:
-        print(f'{request.POST=}')
         login_form: LoginForm = LoginForm(request.POST)
         if login_form.is_valid():
-            print(f'{login_form.cleaned_data=}')
-        else:
-            print('Form data is not valid!')
+            request.session['user_login'] = login_form.cleaned_data['user_login']
+            home_redirect = reverse('home')
+            return redirect(home_redirect)
     else:
         login_form = LoginForm()
 
@@ -45,6 +48,14 @@ def login(request: HttpRequest) -> HttpResponse:
     }
 
     return render(request, 'weatherapp/login.html', context=context)
+
+
+def is_loged_in(request: HttpRequest) -> bool:
+    return bool(request.session.get('user_login'))
+
+
+def get_home_url() -> str:
+    return reverse('home')
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -60,7 +71,7 @@ def signup(request: HttpRequest) -> HttpResponse:
             add_user_in_db(signup_form.cleaned_data)
             # Session.
             request.session['user_login'] = signup_form.cleaned_data['user_login']            
-            home_redirect = reverse('home')            
+            home_redirect = reverse('home')
             return redirect(home_redirect)
     else:
         signup_form = SignUpForm()
