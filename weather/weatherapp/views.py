@@ -92,6 +92,8 @@ def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
     
 
 def logout(request: HttpRequest) -> HttpResponse:
+    if is_loged_in(request):
+        request.session.flush()
     return redirect('home')
 
 
