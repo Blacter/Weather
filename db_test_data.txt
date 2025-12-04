@@ -1,0 +1,28 @@
+type user_tuple = tuple[str, str]
+type location_dict = dict[str, str|int|float]
+
+data_for_users: tuple[user_tuple, ...] = (
+	('Ivan', '1234'), # pk = 1
+	('Inga', 'qwer'), # pk = 2 
+	('Fiora', 'asdf'), # pk = 3 
+	('Olga', 'zxcv'), # pk = 4
+)
+users: list[User] = []
+
+for login, password in data_for_users:
+	user: User = User(login=login, password=password)
+	user.save()
+
+
+data_for_locations: tuple[location_dict, ...] = (
+	dict(name='Volgograd', user_id=User.objects.get(pk=1), latitude=48.7194, longitude=44.5018 ),
+	dict(name='Paris', user_id=User.objects.get(pk=2), latitude=48.85, longitude=2.35 ),
+	dict(name='Rome', user_id=User.objects.get(pk=2), latitude=41.89, longitude=12.51 ),
+	dict(name='Venice', user_id=User.objects.get(pk=3), latitude=45.44, longitude=12.33 ),
+	dict(name='St Petersburg', user_id=User.objects.get(pk=4), latitude=59.94, longitude= 30.31),
+	dict(name='Novgorod', user_id=User.objects.get(pk=4), latitude=58.52, longitude= 31.27),
+)
+
+for location_data in data_for_locations:
+	location: Location = Location(**location_data)
+	location.save()

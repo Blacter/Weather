@@ -26,4 +26,11 @@ FORM_PRINTS: dict[str, str|int] = {
     'user_already_exists_error': 'пользователь с данным логином уже существует.',
     # '': '',
 }
+APPID: str = 'e2fa549b69f91f9f38dd223ca1342605'
+OPEN_WEATHER_PRINTS: dict[str, str|Template] = {
+    'appid': APPID,
+    'weather_by_lat_and_lon_url': Template(f'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid={APPID}'),
+    'weather_by_city_and_country': Template(f'https://api.openweathermap.org/data/2.5/weather?q=$city_name,$country_code&appid={APPID}'),
+    'weather_by_city': Template(f'https://api.openweathermap.org/data/2.5/weather?q=$city_name&appid={APPID}'),
+}
 
