@@ -5,9 +5,11 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.core.validators import RegexValidator
 from django.forms import ValidationError
+from django.http import QueryDict
 
 from .settings import FORM_PRINTS
 from .models import User
+from .model.location_works import LocationWorks
 
 acceptable_characters = RegexValidator(
     r'^[a-zA-Z0-9_]*$', message=FORM_PRINTS['login_validation_error_msg'], code='login')
@@ -127,3 +129,31 @@ class SignUpForm(forms.Form):
             'max_length': FORM_PRINTS['password_max_length_error_msg'],
             'required': FORM_PRINTS['password_required_error_msg'],
         })
+
+class SearchLocationForm(forms.Form):
+    def __init__(self, request_get: QueryDict | None = None, user_id: str | None = None):
+        super().__init__(request_get)
+        self.user_id: str | None = user_id
+        print(f'{self.user_id=}')
+    
+    def clean(self) -> dict[str, Any]:
+        self.cleaned_data: dict[str, Any] = super().clean()
+        
+        # if self.cleaned_data.get('location_name'):
+        #     self.location_name_value: str = self.cleaned_data['location_name']
+        #     if self.is_location_exists():
+        #         raise ValidationError(FORM_PRINTS['search_location_location_exists_error'])
+            
+        return self.cleaned_data
+            
+    # def is_location_exists(self) -> bool:
+    #     return LocationWorks().is_location_exists(self.user_id, self.cleaned_data.get('location_name'))
+    
+    
+    location_name = forms.CharField(
+        max_length=FORM_PRINTS['location_name_max_length'],
+        label=FORM_PRINTS['location_name_label'],
+        error_messages={
+            'max_length': FORM_PRINTS['location_name_max_length_error_msg']
+        }
+    )

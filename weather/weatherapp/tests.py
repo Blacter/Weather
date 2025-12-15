@@ -15,7 +15,7 @@ class TestOpenWeatherWorks:
             ('Moscow', 55.7522, 37.6156),
             ('Paris', 48.8534, 2.3488),
             ('Warsaw', 52.2298, 21.0118),
-            ('Praga', 50.088, 14.4208),
+            ('Praga', 50.088, 14.4208), # ['Praga'-50.088-14.4208]
         ]
     )
     def test_get_lat_and_lot_by_city(self, city: str, res_lat: Lat, res_lon: Lon) -> None:

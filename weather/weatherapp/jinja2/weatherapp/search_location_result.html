@@ -1,0 +1,53 @@
+{% extends 'weatherapp/base.html' %}
+
+{% block title %}
+search_location_result
+{% endblock title %}
+
+{% block header %}
+search_location_result
+{% endblock header %}
+
+{% block content %}
+search_location_results
+{# 
+<form action="{{ url('search_location') }}" method="get">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    <div class="form-error">{{search_location_form.non_field_errors()}}</div>
+    <div class="input-form">
+        <label for="{{search_location_form.location_name.id_for_label}}">{{search_location_form.location_name.label}}</label>
+        {{search_location_form.location_name}}
+        {% if search_location_form.location_name.errors %}
+            <div class="form-error">Ошибка в пароле: {{search_location_form.location_name.errors.as_text()}}</div>
+        {% endif %}
+        <input type="submit">
+    </div>
+</form>
+#}
+
+{% if location_info['api_response_code'] == "200" %}
+
+    <table>
+        <tr><th>Location</th><th>Country</th><th>Temperature</th><th>Lat</th><th>Lon</th><th></th></tr>
+        <tr>
+            <td>{{ location_info['location_name'] }}</td>
+            <td>{{ location_info['country_code'] }}</td>
+            <td>{{ location_info['location_temperature'] }}</td>
+            <td>{{ location_info['location_lat'] }}</td>
+            <td>{{ location_info['location_lon'] }}</td>
+            <td>
+                <form action="{{ url('search_location_result')}}" >
+                    <input type="hidden" name="location_to_add" value="{{ location_info['location_name'] }}">
+                    <input type="submit" value="Add">
+                </form>
+            </td>
+        </tr>
+    </table>
+</form>
+{% elif location_info['api_response_code'] == "404" %}
+Локация с названием {{user_input_location_name}} не найдена.
+{% elif location_info['api_response_code'] is none %}
+Ошибка получения данных.
+{% endif %}
+
+{% endblock content %}

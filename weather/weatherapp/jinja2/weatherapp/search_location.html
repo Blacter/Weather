@@ -10,4 +10,16 @@ search_location
 
 {% block content %}
 search_location
+<form action="{{ url('search_location') }}" method="get">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    <div class="form-error">{{search_location_form.non_field_errors()}}</div>
+    <div class="input-form">
+        <label for="{{search_location_form.location_name.id_for_label}}">{{search_location_form.location_name.label}}</label>
+        {{search_location_form.location_name}}
+        {% if search_location_form.location_name.errors %}
+            <div class="form-error">Ошибка в пароле: {{search_location_form.location_name.errors.as_text()}}</div>
+        {% endif %}
+        <input type="submit">
+    </div>
+</form>
 {% endblock content %}
