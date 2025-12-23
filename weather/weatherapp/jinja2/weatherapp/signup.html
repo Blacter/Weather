@@ -6,10 +6,10 @@ Sign Up
 
 {% block header %}
 Sign Up
+{{ super() }}
 {% endblock header %}
 
 {% block content %}
-Sign Up
 <form action="{{ url('signup') }}" method="post">
     <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
     <div class="form-error">{{signup_form.non_field_errors()}}</div>
@@ -36,4 +36,13 @@ Sign Up
     </div>
     <input type="submit">
 </form>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% endblock content %}

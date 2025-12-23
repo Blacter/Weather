@@ -8,22 +8,43 @@
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
-    {% if user_login %}
-    <h3>Greetings {{ user_login }}</h3>
-    {% else %}
-    <h3>Please login or sign up</h3>
-    {% endif %}
-    <h1>{% block header %}{% endblock header %}</h1>    
-    <nav>
-        <ul>
+    {% block header %}     
+
+        {% if user_login %}
             <li><a href="{{ url('home')}}">home</a></li>
-            <li><a href="{{ url('search_location') }}">search_location</a></li>
-            <li><a href="{{ url('login') }}">login</a></li>            
-            <li><a href="{{ url('signup') }}">sign-up</a></li>
+            <form action="{{ url('search_location') }}" method="get">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+                <div class="form-error">{{search_location_form.non_field_errors()}}</div>
+                <div class="input-form">
+                    <label for="{{search_location_form.location_name.id_for_label}}">{{search_location_form.location_name.label}}</label>
+                    {{search_location_form.location_name}}
+                    {% if search_location_form.location_name.errors %}
+                        <div class="form-error">{{search_location_form.location_name.errors.as_text()}}</div>
+                    {% endif %}
+                    <input type="submit">
+                </div>
+            </form>
             <li><a href="{{ url('logout') }}">logout</a></li>
-        </ul>
-    </nav>
+        {% else %}
+            <li><a href="{{ url('login') }}">login</a></li>
+            <li><a href="{{ url('signup') }}">sign-up</a></li>
+        {% endif %}
+    {% endblock header %}
+    
     {% block content %}
     {% endblock content %}
+
+    <p>debug</p>
+    {% block debug_block %}
+    <nav>
+            <ul>
+                <li><a href="{{ url('home')}}">home</a></li>
+                <li><a href="{{ url('search_location') }}">search_location</a></li>
+                <li><a href="{{ url('login') }}">login</a></li>            
+                <li><a href="{{ url('signup') }}">sign-up</a></li>
+                <li><a href="{{ url('logout') }}">logout</a></li>
+            </ul>
+    </nav>
+    {% endblock %}
 </body>
 </html>

@@ -4,12 +4,14 @@ from typing import Any
 from django import forms
 from django.contrib.auth.hashers import check_password
 from django.core.validators import RegexValidator
+from django.db.utils import OperationalError
 from django.forms import ValidationError
 from django.http import QueryDict
 
 from .settings import FORM_PRINTS
 from .models import User
-from .model.location_works import LocationWorks
+
+
 
 acceptable_characters = RegexValidator(
     r'^[a-zA-Z0-9_]*$', message=FORM_PRINTS['login_validation_error_msg'], code='login')
@@ -23,18 +25,24 @@ class LoginForm(forms.Form):
         return self.cleaned_data
 
     def get_user_with_login(self) -> None:
-        try:            
-            self.user: User  = User.objects.get(login = self.cleaned_data.get('user_login'))
+        user_login: str | None = self.cleaned_data.get('user_login')
+        if user_login is None:
+            return
+        try:
+            self.user: User  = User.objects.get(login = user_login)
         except User.DoesNotExist:
-            raise ValidationError('The user with login does not exist.')
+            raise ValidationError(FORM_PRINTS['login_does_not_exist'])
+        except OperationalError:
+            raise
 
     def check_password(self) -> None:
+        user_login: str | None = self.cleaned_data.get('user_login')
         user_password: str | None = self.cleaned_data.get('user_password')
-        if user_password is None:
+        if user_login is None or user_password is None:
             return
         user_password_hash: str = self.user.password
-        if not check_password(user_password, user_password_hash):            
-            raise ValidationError('Wrong password.')
+        if not check_password(user_password, user_password_hash):
+            raise ValidationError(FORM_PRINTS['password_wrong_password'])
 
     user_login = forms.CharField(
         min_length=FORM_PRINTS['login_min_length'],
@@ -50,7 +58,7 @@ class LoginForm(forms.Form):
         })
     user_password = forms.CharField(
         min_length=FORM_PRINTS['password_min_length'],
-        max_length=FORM_PRINTS['password_max_length'], 
+        max_length=FORM_PRINTS['password_max_length'],
         label=FORM_PRINTS['password_label'],
         widget=forms.PasswordInput(),
         error_messages={
@@ -88,7 +96,7 @@ class SignUpForm(forms.Form):
         try:
             users_with_the_login_count = len(User.objects.filter(login = self.cleaned_data['user_login']))
             print(f'{users_with_the_login_count=}')
-        except:
+        except OperationalError:
             raise
         
         if users_with_the_login_count >= 1:
@@ -122,7 +130,7 @@ class SignUpForm(forms.Form):
     user_password_confirm = forms.CharField(
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
-        label=FORM_PRINTS['password_label'],
+        label=FORM_PRINTS['password_confirm_label'],
         widget=forms.PasswordInput(),
         error_messages={
             'min_length': FORM_PRINTS['password_min_length_error_msg'],
@@ -130,24 +138,16 @@ class SignUpForm(forms.Form):
             'required': FORM_PRINTS['password_required_error_msg'],
         })
 
+
 class SearchLocationForm(forms.Form):
-    def __init__(self, request_get: QueryDict | None = None, user_id: str | None = None):
-        super().__init__(request_get)
-        self.user_id: str | None = user_id
-        print(f'{self.user_id=}')
+    # def __init__(self, request_get: QueryDict | None = None, user_id: str | None = None):
+    #     super().__init__(request_get)
+    #     self.user_id: str | None = user_id
+    #     print(f'{self.user_id=}')
     
     def clean(self) -> dict[str, Any]:
-        self.cleaned_data: dict[str, Any] = super().clean()
-        
-        # if self.cleaned_data.get('location_name'):
-        #     self.location_name_value: str = self.cleaned_data['location_name']
-        #     if self.is_location_exists():
-        #         raise ValidationError(FORM_PRINTS['search_location_location_exists_error'])
-            
+        self.cleaned_data: dict[str, Any] = super().clean()            
         return self.cleaned_data
-            
-    # def is_location_exists(self) -> bool:
-    #     return LocationWorks().is_location_exists(self.user_id, self.cleaned_data.get('location_name'))
     
     
     location_name = forms.CharField(

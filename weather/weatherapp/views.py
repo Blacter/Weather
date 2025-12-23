@@ -1,94 +1,79 @@
 from typing import Any
 
-from django.contrib.auth.hashers import make_password
-from django.forms import ValidationError
-from django.http import HttpResponse, HttpRequest, QueryDict
+from django.contrib import messages
+from django.db.utils import OperationalError
+from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseNotFound
-from django.http import Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
 
-from weather.jinja2 import environment
+# from weather.jinja2 import environment
 
 from .forms import LoginForm, SignUpForm, SearchLocationForm
-from .model.location_works import LocationWorks
-from .models import User
-from .open_weather_works import OpenWeatherWorks
 from .settings import FORM_PRINTS
-from .type_aliaces import Lat, Lon
-
-# Create your views here.
-
+from .utils import (do_login, do_signup, do_search_location, is_loged_in, get_home_url)
 
 def index(request: HttpRequest) -> HttpResponse:
-    main_page_context = {
+    main_page_context: dict[str, Any] = {
         'user_login': request.session.get('user_login'),
+        'search_location_form': SearchLocationForm(),
     }
     return render(request, 'weatherapp/index.html', context=main_page_context)
 
 
 def login(request: HttpRequest) -> HttpResponse:
+    status: int = 200
     if is_loged_in(request):
         home_redirect = get_home_url()
         return redirect(home_redirect)
     
     if request.POST:
         login_form: LoginForm = LoginForm(request.POST)
-        if login_form.is_valid():
-            request.session['user_login'] = login_form.cleaned_data['user_login']
-            home_redirect = reverse('home')
-            return redirect(home_redirect)
+        try:
+            if login_form and login_form.is_valid():
+                do_login(request, login_form)
+                home_redirect = reverse('home')
+                return redirect(home_redirect)
+        except OperationalError:
+            messages.error(request, FORM_PRINTS['server_error'])
+            status = 500
     else:
         login_form = LoginForm()
 
     context: dict[str, Any] = {
-        'login_form': login_form,        
+        'login_form': login_form,
+        'messages': messages.get_messages(request),
     }
 
-    return render(request, 'weatherapp/login.html', context=context)
-
-
-def is_loged_in(request: HttpRequest) -> bool:
-    return bool(request.session.get('user_login'))
-
-
-def get_home_url() -> str:
-    return reverse('home')
+    return render(request, 'weatherapp/login.html', context=context, status=status)
+    
 
 
 def signup(request: HttpRequest) -> HttpResponse:
-    if request.session.get('user_login'):
+    status: int = 200
+    if is_loged_in(request):
         home_redirect = reverse('home')            
         return redirect(home_redirect)
         
     if request.POST:
         signup_form: SignUpForm = SignUpForm(request.POST)
         if signup_form.is_valid():
-            print(f'{signup_form.cleaned_data=}')
-            # TODO: add user in db
-            add_user_in_db(signup_form.cleaned_data)
-            # Session.
-            request.session['user_login'] = signup_form.cleaned_data['user_login']            
-            home_redirect = reverse('home')
-            return redirect(home_redirect)
+            try:
+                do_signup(request, signup_form)
+                home_redirect = reverse('home')
+                return redirect(home_redirect)
+            except OperationalError:
+                messages.error(request, FORM_PRINTS['server_error'])
+                status = 500
     else:
         signup_form = SignUpForm()
 
-    context = {'signup_form': signup_form}
+    context: dict[str, Any] = {
+        'signup_form': signup_form,
+        'messages': messages.get_messages(request),
+    }
 
-    return render(request, 'weatherapp/signup.html', context=context)
-
-
-def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
-    try:
-        user_password: str = cleaned_data['user_password']
-        print(f'{user_password=}')
-        hash_password: str = make_password(user_password)
-        User.objects.create(login=cleaned_data['user_login'], password=hash_password)
-    except: 
-        raise
+    return render(request, 'weatherapp/signup.html', context=context, status=status)
     
 
 def logout(request: HttpRequest) -> HttpResponse:
@@ -103,15 +88,11 @@ def search_location(request: HttpRequest) -> HttpResponse:
         return redirect(login_redirect)
     
     if request.GET:
-        # user_id: str = request.session['user_id']
-        user_id: str = '-1' # temporary. Then implement location in db exists when user add location in db.
-        search_location_form: SearchLocationForm = SearchLocationForm(request.GET, user_id)
+        search_location_form: SearchLocationForm = SearchLocationForm(request.GET)
         if search_location_form.is_valid():
-            save_user_input_location_name(request, search_location_form.cleaned_data['location_name'])
-            save_location_info(request, search_location_form)
-            search_location_result: str = reverse('search_location_result') # reverse('search_location_result')
-            print(f'{request.session['location_info']=}')
-            return redirect(search_location_result)
+            do_search_location(request, search_location_form)
+            search_location_result_url: str = reverse('search_location_result')
+            return redirect(search_location_result_url)
     else: 
         search_location_form: SearchLocationForm = SearchLocationForm()
         
@@ -123,34 +104,24 @@ def search_location(request: HttpRequest) -> HttpResponse:
     return render(request, 'weatherapp/search_location.html', context=context)
 
 
-def save_user_input_location_name(request: HttpRequest, location_name: str | None) -> None:
-    request.session['user_input_location_name'] = location_name
-    
-
-
-def save_location_info(request: HttpRequest, search_location_form: SearchLocationForm) -> None:
-    location_name: str = search_location_form.cleaned_data['location_name']
-    weather_api: OpenWeatherWorks = OpenWeatherWorks()
-    weather_api.get_lat_and_lot_by_city(city_name=location_name)
-    location_info: dict[str, str | None] | None = weather_api.location_info()
-    request.session['location_info'] = location_info
-    
 
 def search_location_result(request: HttpRequest) -> HttpResponse:
     if not is_loged_in(request):
         login_redirect = reverse('login')
         return redirect(login_redirect)
     
-    print(f'{request.session.get('location_info')['api_response_code']=}')
-    
     context: dict[str, Any] = {
         'user_login': request.session.get('user_login'),
         'location_info': request.session.get('location_info'),
         'user_input_location_name': request.session.get('user_input_location_name'),
+        'search_location_form': SearchLocationForm(),
     }
     
     return render(request, 'weatherapp/search_location_result.html', context=context)
 
 
-def page_not_found(request: HttpRequest, exception) -> HttpResponseNotFound:
+def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponseNotFound:
     return HttpResponseNotFound('<h1>page not found</h1>')
+
+def server_error(request: HttpRequest) -> HttpResponseNotFound:
+    return HttpResponseNotFound('<h1>server error, please, try again later</h1>')

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../static/css/style.css">
+    <script src="../../static/js/script.js"></script>
+    <title>
+Login
+</title>
+</head>
+<body>
+    
+Login
+     
+
+        
+            <li><a href="/weatherapp/login/">login</a></li>
+            <li><a href="/weatherapp/signup/">sign-up</a></li>
+        
+    
+
+    
+    
+<form action="/weatherapp/login/" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="Em4R6FoU5hQwKeHIZpFO7qYFgI72Ycu0J132eR9UZJ13oRC04s3681eALddcn897">
+    <div class="form-error form-general-error"></div>
+    <div class="input-form">        
+        <div class="form-row">
+            <label for="id_user_login">Логин:</label>
+            <input type="text" name="user_login" value="Ivan" maxlength="20" minlength="4" required id="id_user_login">
+            
+        </div>
+        <div class="form-row">
+            <label for="id_user_password">Пароль:</label>
+            <input type="password" name="user_password" maxlength="20" minlength="4" required id="id_user_password">
+            
+                <div class="form-error password-field-error">Ошибка в пароле: * слишком короткий пароль. Должен содержать хотя бы 4 символов.</div>
+            
+        </div>
+    </div>
+    <input type="submit">
+</form>
+
+
+
+
+
+
+    <p>debug</p>
+    
+    <nav>
+            <ul>
+                <li><a href="/weatherapp/">home</a></li>
+                <li><a href="/weatherapp/search_location/">search_location</a></li>
+                <li><a href="/weatherapp/login/">login</a></li>            
+                <li><a href="/weatherapp/signup/">sign-up</a></li>
+                <li><a href="/weatherapp/logout/">logout</a></li>
+            </ul>
+    </nav>
+    
+</body>
+</html>
