@@ -8,8 +8,7 @@
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
-    {% block header %}     
-
+    {% block header %}
         {% if user_login %}
             <li><a href="{{ url('home')}}">home</a></li>
             <form action="{{ url('search_location') }}" method="get">

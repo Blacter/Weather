@@ -9,5 +9,6 @@ urlpatterns: list[URLPattern] = [
     path('signup/', views.signup, name='signup'),
     path('logout/', views.logout, name='logout'),
     path('search_location/', views.search_location, name='search_location'),
-    path('search_location_result/', views.search_location_result, name='search_location_result'),    
+    path('search_location_result/', views.search_location_result, name='search_location_result'),
+    path('add_location/', views.add_location, name='add_location'),
 ]

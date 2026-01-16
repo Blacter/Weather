@@ -9,6 +9,7 @@ from django.urls import reverse
 from .forms import LoginForm, SignUpForm, SearchLocationForm
 from .models import User
 from .open_weather_works import OpenWeatherWorks
+from .repository.location_works import LocationWorks
 from .repository.utils import get_user_id_by_login
 
 def do_login(request: HttpRequest, login_form: LoginForm) -> None:
@@ -18,15 +19,14 @@ def do_login(request: HttpRequest, login_form: LoginForm) -> None:
 def do_signup(request: HttpRequest, signup_form: SignUpForm) -> None:
     add_user_in_db(signup_form.cleaned_data)
     save_user_data_in_session(request, signup_form.cleaned_data['user_login'])    
-    
-    
+
+
 def save_user_data_in_session(request: HttpRequest, user_login: str) -> None:    
     save_in_session(request, key='user_login', value=user_login)
     user_id: int = get_user_id_by_login(user_login=user_login)
     save_in_session(request, key='user_id', value=user_id)
-    print(f'{user_id=}')
-    
-    
+
+
 def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
     user_password: str = cleaned_data['user_password']
     hash_password: str = make_password(user_password)
@@ -51,7 +51,7 @@ def do_search_location(request: HttpRequest, search_location_form: SearchLocatio
 
 def save_user_input_location_name(request: HttpRequest, location_name: str | None) -> None:
     request.session['user_input_location_name'] = location_name
-   
+
 
 def save_location_info(request: HttpRequest, search_location_form: SearchLocationForm) -> None:
     location_name: str = search_location_form.cleaned_data['location_name']
@@ -63,3 +63,9 @@ def save_location_info(request: HttpRequest, search_location_form: SearchLocatio
 
 def save_in_session(request: HttpRequest, key: str, value: Any) -> None:
     request.session[key] = value
+
+
+def do_add_location(request: HttpRequest) -> None:    
+    location_works: LocationWorks = LocationWorks(request)
+    location_works.save_location()
+    

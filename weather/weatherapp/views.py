@@ -2,6 +2,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.db.utils import OperationalError
+from django.forms import ValidationError
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, redirect
@@ -9,14 +10,24 @@ from django.urls import reverse
 
 # from weather.jinja2 import environment
 
-from .forms import LoginForm, SignUpForm, SearchLocationForm
+from .forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm
 from .settings import FORM_PRINTS
-from .utils import (do_login, do_signup, do_search_location, is_loged_in, get_home_url)
+from .utils import (do_login, do_signup, do_search_location, do_add_location, is_loged_in, get_home_url)
+
+
+def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponseNotFound:
+    return HttpResponseNotFound('<h1>page not found</h1>')
+
+
+def server_error(request: HttpRequest) -> HttpResponseNotFound:
+    return HttpResponseNotFound('<h1>server error, please, try again later</h1>')
+
 
 def index(request: HttpRequest) -> HttpResponse:
     main_page_context: dict[str, Any] = {
         'user_login': request.session.get('user_login'),
         'search_location_form': SearchLocationForm(),
+        'messages': messages.get_messages(request),
     }
     return render(request, 'weatherapp/index.html', context=main_page_context)
 
@@ -46,7 +57,6 @@ def login(request: HttpRequest) -> HttpResponse:
     }
 
     return render(request, 'weatherapp/login.html', context=context, status=status)
-    
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -54,7 +64,7 @@ def signup(request: HttpRequest) -> HttpResponse:
     if is_loged_in(request):
         home_redirect = reverse('home')            
         return redirect(home_redirect)
-        
+
     if request.POST:
         signup_form: SignUpForm = SignUpForm(request.POST)
         if signup_form.is_valid():
@@ -104,24 +114,64 @@ def search_location(request: HttpRequest) -> HttpResponse:
     return render(request, 'weatherapp/search_location.html', context=context)
 
 
-
 def search_location_result(request: HttpRequest) -> HttpResponse:
     if not is_loged_in(request):
         login_redirect = reverse('login')
         return redirect(login_redirect)
     
+    location_info: dict[str, Any] = request.session.get('location_info')
+    location_name: str = ''
+    if location_info: 
+        location_name: str = location_info.get('location_name')
+    
     context: dict[str, Any] = {
         'user_login': request.session.get('user_login'),
-        'location_info': request.session.get('location_info'),
+        'location_info': location_info,
         'user_input_location_name': request.session.get('user_input_location_name'),
         'search_location_form': SearchLocationForm(),
+        'add_location_form': AddLocationForm({'location_name': location_name}),
+        'messages': messages.get_messages(request),
     }
     
     return render(request, 'weatherapp/search_location_result.html', context=context)
 
 
-def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponseNotFound:
-    return HttpResponseNotFound('<h1>page not found</h1>')
+def add_location(request: HttpRequest) -> HttpResponse:
+    if not is_loged_in(request):
+        login_redirect = reverse('login')
+        return redirect(login_redirect)
+    
+    status: int = 200
+    
+    if request.POST:
+        try:
+            add_location_form: AddLocationForm = AddLocationForm(request.POST, request=request)
+            if add_location_form.is_valid():
+                print(f'do_add_location')
+                do_add_location(request)
+                home_redirect = reverse('home')
+                messages.success(request, message=FORM_PRINTS['location_addition_success'])
+                return redirect(home_redirect)                
+            else:
+                ValidationError(FORM_PRINTS['location_addition_error'])
+        except ValidationError:
+            raise
+        except OperationalError:
+            messages.error(request, FORM_PRINTS['server_error'])
+            status: int = 500
 
-def server_error(request: HttpRequest) -> HttpResponseNotFound:
-    return HttpResponseNotFound('<h1>server error, please, try again later</h1>')
+    location_info: dict[str, Any] = request.session.get('location_info')
+    location_name: str = ''
+    if location_info: 
+        location_name: str = location_info.get('location_name')
+    
+    context: dict[str, Any] = {
+        'user_login': request.session.get('user_login'),
+        'location_info': location_info,
+        'user_input_location_name': request.session.get('user_input_location_name'),
+        'search_location_form': SearchLocationForm(),
+        'add_location_form': AddLocationForm({'location_name': location_name}),        
+    }
+    
+    return render(request, 'weatherapp/search_location_result.html', context=context, status=status)
+    
