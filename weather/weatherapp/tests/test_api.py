@@ -3,10 +3,10 @@ from contextlib import nullcontext
 import pytest
 from django.test import TestCase
 
-from .type_aliaces import Lat, Lon
-from .open_weather_works import OpenWeatherWorks
+from weatherapp.type_aliaces import Lat, Lon
+from weatherapp.open_weather_works import OpenWeatherWorks
 
-# Create your tests here.
+
 class TestOpenWeatherWorks:
     @pytest.mark.parametrize(
         'city, res_lat, res_lon',

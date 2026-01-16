@@ -41,7 +41,7 @@ FORM_PRINTS: dict[str, str|int] = {
     'location_addition_success': 'Локация успешно добавлена',
     # '': '',
 }
-APPID: str = ''
+APPID: str = '036c7b1114a05396ffe3dedefcffa484'
 OPEN_WEATHER_PRINTS: dict[str, str|Template] = {
     'appid': APPID,
     'weather_by_lat_and_lon_url': Template(f'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid={APPID}'),
