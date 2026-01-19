@@ -12,6 +12,20 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    DATABASE_NAME: str
+    DATABASE_USER: str
+    DATABASE_PASSWORD: str
+    DATABASE_HOST: str
+    DATABASE_PORT: str
+    APPID: str
+    class Config:
+        env_file='weather/.env'
+
+settings: Settings = Settings()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -90,14 +104,15 @@ WSGI_APPLICATION = 'weather.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'weatherapp_db',
-        'USER': 'postgres',
-        'PASSWORD': '12345',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': settings.DATABASE_NAME,
+        'USER': settings.DATABASE_USER,
+        'PASSWORD': settings.DATABASE_PASSWORD,
+        'HOST': settings.DATABASE_HOST,
+        'PORT': settings.DATABASE_PORT,
         'CONN_MAX_AGE': 60, # 1 минута
     }
 }

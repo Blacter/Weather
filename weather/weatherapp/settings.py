@@ -1,5 +1,7 @@
 from string import Template
 
+from weather.settings import settings
+
 LOGIN_MIN_LENGTH: int = 4
 LOGIN_MAX_LENGTH: int = 20
 PASSWORD_MIN_LENGTH: int = 4
@@ -41,9 +43,11 @@ FORM_PRINTS: dict[str, str|int] = {
     'location_addition_success': 'Локация успешно добавлена',
     # '': '',
 }
-APPID: str = '036c7b1114a05396ffe3dedefcffa484'
+
+# weatherapp_settings: WeatherappSettings = WeatherappSettings()
+APPID: str = settings.APPID
 OPEN_WEATHER_PRINTS: dict[str, str|Template] = {
-    'appid': APPID,
+    'appid': settings.APPID,
     'weather_by_lat_and_lon_url': Template(f'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid={APPID}'),
     'weather_by_city_and_country': Template(f'https://api.openweathermap.org/data/2.5/weather?q=$city_name,$country_code&appid={APPID}'),
     'weather_by_city': Template(f'https://api.openweathermap.org/data/2.5/weather?q=$city_name&appid={APPID}'),

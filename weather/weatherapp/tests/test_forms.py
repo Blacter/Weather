@@ -283,7 +283,6 @@ class TestSignUpFormUserPasswordValidators(TestCase):
             'user_password': 'I'*20,
             'user_password_confirm': 'I'*20,
         })
-        print(f'{signup_form.errors=}')
         self.assertTrue(signup_form.is_valid())
         
         signup_form: SignUpForm = SignUpForm({
