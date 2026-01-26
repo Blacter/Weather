@@ -22,7 +22,8 @@ class Settings(BaseSettings):
     DATABASE_PORT: str
     APPID: str
     class Config:
-        env_file='weather/.env'
+        # FIXME Исправить на относительный путь, но чтобы запускался и в debug, и в python manage.py runserver
+        env_file=r'weather/.env'
 
 settings: Settings = Settings()
 
