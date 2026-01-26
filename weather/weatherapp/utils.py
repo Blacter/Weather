@@ -4,13 +4,16 @@ from django.contrib.auth.hashers import make_password
 from django.db.utils import OperationalError
 from django.http import HttpRequest
 from django.http import HttpResponseServerError, Http404
+from django.db.models import QuerySet
 from django.urls import reverse
 
 from .forms import LoginForm, SignUpForm, SearchLocationForm
-from .models import User
+from .models import User, Location
 from .open_weather_works import OpenWeatherWorks
 from .repository.location_works import LocationWorks
-from .repository.utils import get_user_id_by_login
+from .repository.utils import get_user_id_by_login, get_locations_by_user_name
+from .type_aliaces import WeatherInfo, WeatherInfoList
+
 
 def do_login(request: HttpRequest, login_form: LoginForm) -> None:
     save_user_data_in_session(request, login_form.cleaned_data['user_login'])
@@ -68,4 +71,21 @@ def save_in_session(request: HttpRequest, key: str, value: Any) -> None:
 def do_add_location(request: HttpRequest) -> None:    
     location_works: LocationWorks = LocationWorks(request)
     location_works.save_location()
+    
+
+def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInfoList:
+    locations: QuerySet[Location] = get_locations_by_user_name(user_login)
+    weather_api: OpenWeatherWorks = OpenWeatherWorks()    
+    weather_info_list: WeatherInfoList = []
+    
+    for location in locations:
+        weather_api.get_weather_by_city_name(location.name)
+        weather_info: dict[str, str | None] | None = weather_api.location_info()
+        weather_info_list.append(WeatherInfo(
+            location_name = weather_info['location_name'],
+            temperature = weather_info['location_temperature'],
+            country_code = weather_info['country_code'],
+        ))
+    
+    return weather_info_list
     

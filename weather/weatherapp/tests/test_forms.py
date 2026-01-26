@@ -427,7 +427,6 @@ class TestAddLocationFormLocationNameValidators(TestCase):
         request: HttpRequest = HttpRequest()
         request.session = {}
         request.session['user_id'] = self.user.pk
-        # request.session['user_input_location_name'] = 'Vladivostok'
         request.session['location_info'] = {
             'api_response_code': '200',
             'location_name': 'Moscow',
@@ -458,7 +457,6 @@ class TestAddLocationFormLocationNameValidators(TestCase):
         request: HttpRequest = HttpRequest()
         request.session = {}
         request.session['user_id'] = self.user.pk
-        # request.session['user_input_location_name'] = 'Vladivostok'
         request.session['location_info'] = {
             'api_response_code': '200',
             'location_name': 'I'*255,
@@ -497,7 +495,6 @@ class TestAddLocationFormBeyondFieldsValidators(TestCase):
         request: HttpRequest = HttpRequest()
         request.session = {}
         request.session['user_id'] = self.user.pk
-        # request.session['user_input_location_name'] = 'Vladivostok'
         request.session['location_info'] = {
             'api_response_code': '200',
             'location_name': 'Moscow',
@@ -527,7 +524,6 @@ class TestAddLocationFormBeyondFieldsValidators(TestCase):
         request: HttpRequest = HttpRequest()
         request.session = {}
         request.session['user_id'] = self.user.pk
-        # request.session['user_input_location_name'] = 'Vladivostok'
         request.session['location_info'] = {
             'api_response_code': '200',
             'location_name': 'Moscow',
@@ -557,7 +553,6 @@ class TestAddLocationFormBeyondFieldsValidators(TestCase):
         request: HttpRequest = HttpRequest()
         request.session = {}
         request.session['user_id'] = self.user.pk
-        # request.session['user_input_location_name'] = 'Vladivostok'
         request.session['location_info'] = {
             'api_response_code': '200',
             'location_name': 'Moscow',
@@ -581,4 +576,3 @@ class TestAddLocationFormBeyondFieldsValidators(TestCase):
         self.assertIn('__all__', add_location_form.errors)
         self.assertEqual(add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
         
-    

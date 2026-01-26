@@ -1,3 +1,4 @@
+from collections import namedtuple
 from typing import Any
 
 from django.contrib import messages
@@ -11,8 +12,9 @@ from django.urls import reverse
 # from weather.jinja2 import environment
 
 from .forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm
+from .type_aliaces import WeatherInfoList
 from .settings import FORM_PRINTS
-from .utils import (do_login, do_signup, do_search_location, do_add_location, is_loged_in, get_home_url)
+from .utils import (do_login, do_signup, do_search_location, do_add_location, is_loged_in, get_home_url, get_weather_info_list)
 
 
 def page_not_found(request: HttpRequest, exception: Exception) -> HttpResponseNotFound:
@@ -24,18 +26,28 @@ def server_error(request: HttpRequest) -> HttpResponseNotFound:
 
 
 def index(request: HttpRequest) -> HttpResponse:
+    weather_info_list: WeatherInfoList | None = None
+    if is_loged_in(request):
+        user_login: str = request.session.get('user_login')
+        weather_info_page: int = 1
+        weather_info_list: WeatherInfoList = get_weather_info_list(user_login, weather_info_page)
+
     main_page_context: dict[str, Any] = {
         'user_login': request.session.get('user_login'),
         'search_location_form': SearchLocationForm(),
         'messages': messages.get_messages(request),
+        'weather_info_list': weather_info_list
     }
     return render(request, 'weatherapp/index.html', context=main_page_context)
 
 
 def login(request: HttpRequest) -> HttpResponse:
+    
+    
     status: int = 200
     if is_loged_in(request):
         home_redirect = get_home_url()
+        
         return redirect(home_redirect)
     
     if request.POST:

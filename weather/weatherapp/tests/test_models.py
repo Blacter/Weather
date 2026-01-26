@@ -17,7 +17,7 @@ class TestUserModels(TestCase):
 
     def test_login_unique_constraint(self) -> None:
         User.objects.create(login='Ivan', password='12341234')
-        with pytest.raises(IntegrityError):
+        with pytest.raises(IntegrityError): # FIXME: ? change to self.assertRaises(IntegrityError)
             with transaction.atomic():
                 User.objects.create(login='Ivan', password='asdfasdf')
             

@@ -21,4 +21,23 @@ Home
 </ul>
 {% endif %}
 <p>messages end</p>
+
+<p>saved locations table</p>
+{% if user_login and weather_info_list %}
+    <table>
+        <tr><th>location name</th><th>temperature</th><th>country</th></tr>
+        {% for weather_info in weather_info_list %}
+            <tr>
+                <th>{{ weather_info.location_name }}</th>
+                <th>{{ weather_info.temperature }}</th>
+                <th>{{ weather_info.country_code }}</th>
+            </tr>
+        {% endfor %}
+        <tr></tr>
+    </table>
+
+{% elif user_login and not weather_info_list %}
+    <p>Сохранённые локации отсутствуют</p>
+{% endif %}
+
 {% endblock content %}

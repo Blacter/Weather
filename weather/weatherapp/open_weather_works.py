@@ -59,9 +59,13 @@ class OpenWeatherWorks:
         except RequestException:
             self.weather_response = None
         
-    def get_lat_and_lot_by_city(self, city_name: str) -> tuple[Lat, Lon]:
+    def get_weather_by_city_name(self, city_name: str) -> None: # TODO решить что делать с get_weather_by_city().
         self.city_name: str = city_name
         self.get_weather_by_city()
+        
+    def get_lat_and_lot_by_city(self, city_name: str) -> tuple[Lat, Lon]:
+        self.city_name: str = city_name
+        self.get_weather_by_city() # TODO вынести в отдельную функцию?
         return (self.location_lat, self.location_lon)
        
     def get_weather_by_city(self) -> None:        
