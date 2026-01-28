@@ -1,7 +1,9 @@
 from typing import Any
 
+from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.db.utils import OperationalError
+from django.forms import ValidationError
 from django.http import HttpRequest
 from django.http import HttpResponseServerError, Http404
 from django.db.models import QuerySet
@@ -11,7 +13,8 @@ from .forms import LoginForm, SignUpForm, SearchLocationForm
 from .models import User, Location
 from .open_weather_works import OpenWeatherWorks
 from .repository.location_works import LocationWorks
-from .repository.utils import get_user_id_by_login, get_locations_by_user_name
+from .repository.utils import get_user_id_by_login, get_locations_by_user_name, delete_location
+from .settings import FORM_PRINTS
 from .type_aliaces import WeatherInfo, WeatherInfoList
 
 
@@ -88,4 +91,12 @@ def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInf
         ))
     
     return weather_info_list
+
+
+def do_delete_location(request: HttpRequest, user_login: str, location_name_to_delete: str) -> None:
+    try:
+        delete_location(user_login, location_name_to_delete)
+        messages.success(request, FORM_PRINTS['delete_location_success'])
+    except Location.DoesNotExist:
+        messages.error(request, FORM_PRINTS['delete_location_does_not_exist'])
     

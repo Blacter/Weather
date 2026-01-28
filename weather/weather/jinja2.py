@@ -10,6 +10,7 @@ def environment(**options):
     env.globals.update({
         'static': static,
         'url': reverse,
+        'zip': zip,
     })
     return env
 

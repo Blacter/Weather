@@ -189,3 +189,14 @@ class AddLocationForm(forms.Form):
             'required': FORM_PRINTS['field_required_error_msg'],
         },
     )
+
+
+class DeleteLocationForm(forms.Form):    
+    location_name = forms.CharField(
+        widget=forms.HiddenInput(),
+        max_length=FORM_PRINTS['location_name_max_length'],
+        error_messages={
+            'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
+            'required': FORM_PRINTS['field_required_error_msg'],
+        },
+    )

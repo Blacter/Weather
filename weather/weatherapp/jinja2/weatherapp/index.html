@@ -26,12 +26,23 @@ Home
 {% if user_login and weather_info_list %}
     <table>
         <tr><th>location name</th><th>temperature</th><th>country</th></tr>
-        {% for weather_info in weather_info_list %}
+        
+        {% for weather_info, delete_location_form in zip(weather_info_list, delete_location_form_list) %}
+            <form action="{{ url('home') }}" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
             <tr>
-                <th>{{ weather_info.location_name }}</th>
-                <th>{{ weather_info.temperature }}</th>
-                <th>{{ weather_info.country_code }}</th>
+                <td>{{ weather_info.location_name }}</td>
+                <td>{{ weather_info.temperature }}</td>
+                <td>{{ weather_info.country_code }}</td>                                
+                <td>
+                    {{ delete_location_form.location_name }}
+                    <input type="submit" value="delete location">
+                    {% if delete_location_form.location_name.errors %}
+                    <div class="form-error">{{delete_location_form.location_name.errors.as_text()}}</div>
+                    {% endif %}
+                </td>
             </tr>
+            </form>
         {% endfor %}
         <tr></tr>
     </table>
