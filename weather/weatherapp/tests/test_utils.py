@@ -36,3 +36,6 @@ class TestAddLocationUtilsSuccess(TestCase):
         self.assertEqual(added_location.user_id.pk, self.user.pk)
         self.assertEqual(added_location.name, request.session['location_info']['location_name'])
         
+    def test_get_weather_info_list(self):
+        pass
+        

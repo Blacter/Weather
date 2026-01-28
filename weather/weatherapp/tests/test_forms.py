@@ -1,9 +1,10 @@
 from django.contrib.auth.hashers import make_password
 from django.http import HttpRequest
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
-from weatherapp.forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm
+from weatherapp.forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm, DeleteLocationForm
 from weatherapp.models import User
+from weatherapp.settings import LOCATION_NAME_MAX_LENGTH
 from weatherapp.settings import FORM_PRINTS
 
 class TestLoginFormUserLoginFieldValidators(TestCase):
@@ -575,4 +576,37 @@ class TestAddLocationFormBeyondFieldsValidators(TestCase):
         self.assertFalse(add_location_form.is_valid())
         self.assertIn('__all__', add_location_form.errors)
         self.assertEqual(add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+        
+
+class TestDeleteLocationFormLocationNameFieldValidation(SimpleTestCase):
+    def test_location_name_required_validator(self) -> None:
+        delete_location_form: DeleteLocationForm = DeleteLocationForm({
+            'location_name': 'Moscow'
+        })
+        self.assertTrue(delete_location_form.is_valid())
+        
+        delete_location_form: DeleteLocationForm = DeleteLocationForm({
+            'location_name': ''
+        })
+        self.assertFalse(delete_location_form.is_valid())
+        self.assertIn('location_name', delete_location_form.errors)
+        self.assertEqual(delete_location_form.errors['location_name'][0], FORM_PRINTS['field_required_error_msg'])
+        
+        delete_location_form: DeleteLocationForm = DeleteLocationForm({})
+        self.assertFalse(delete_location_form.is_valid())
+        self.assertIn('location_name', delete_location_form.errors)
+        self.assertEqual(delete_location_form.errors['location_name'][0], FORM_PRINTS['field_required_error_msg'])
+    
+    def test_location_name_max_length_validator(self) -> None:
+        delete_location_form: DeleteLocationForm = DeleteLocationForm({
+            'location_name': 'M' * LOCATION_NAME_MAX_LENGTH
+        })
+        self.assertTrue(delete_location_form.is_valid())
+        
+        delete_location_form: DeleteLocationForm = DeleteLocationForm({
+            'location_name': 'm' * (1+LOCATION_NAME_MAX_LENGTH)
+        })
+        self.assertFalse(delete_location_form.is_valid())
+        self.assertIn('location_name', delete_location_form.errors)
+        self.assertEqual(delete_location_form.errors['location_name'][0], FORM_PRINTS['location_name_max_length_error_msg'])
         

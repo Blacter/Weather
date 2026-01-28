@@ -41,6 +41,9 @@ FORM_PRINTS: dict[str, str|int] = {
     
     'location_addition_error': 'Ошибка при добавлении локации.',
     'location_addition_success': 'Локация успешно добавлена',
+    
+    'delete_location_success': 'Локация успешно удалена',
+    'delete_location_does_not_exist': 'Ошибка при удалении локации',
     # '': '',
 }
 

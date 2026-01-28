@@ -9,6 +9,8 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 from weatherapp import forms
 from weatherapp import views
+from weatherapp.type_aliaces import WeatherInfo
+from weatherapp.type_aliaces import WeatherInfoList
 
 
 class TestViews(TestCase):
@@ -19,13 +21,21 @@ class TestViews(TestCase):
     
     def test_index_view(self) -> None:
         tm: Template = self.env.get_template('weatherapp/index.html')
+        weather_info_list: WeatherInfoList | None = None
+        
         main_page_context: dict[str, Any] = {
-            'user_login': None,
+            'user_login': 'tmp', # None
             'search_location_form': forms.SearchLocationForm(),
             'messages': None,
             'url': reverse,
+            'weather_info_list': [WeatherInfo( # weather_info_list
+                location_name = 'l_name',
+                temperature = 'l_temperature',
+                country_code = 'l_country',
+            )], # weather_info_list 
         }        
         content_from_index_template: str = tm.render(**main_page_context)
+        print(content_from_index_template)
         
         index_url: str = reverse('home')
         response: HttpResponse = self.client.get(index_url)
