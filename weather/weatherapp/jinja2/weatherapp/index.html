@@ -37,9 +37,6 @@ Home
                 <td>
                     {{ delete_location_form.location_name }}
                     <input type="submit" value="delete location">
-                    {% if delete_location_form.location_name.errors %}
-                    <div class="form-error">{{delete_location_form.location_name.errors.as_text()}}</div>
-                    {% endif %}
                 </td>
             </tr>
             </form>
