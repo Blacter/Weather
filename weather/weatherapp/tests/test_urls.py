@@ -15,10 +15,6 @@ class TestUrls(SimpleTestCase):
         url = reverse('logout')
         self.assertEqual(resolve(url).func, views.logout)
         
-    def test_search_location_is_resolve(self):
-        url = reverse('search_location')
-        self.assertEqual(resolve(url).func, views.search_location)
-        
     def test_search_location_result_is_resolve(self):
         url = reverse('search_location_result')
         self.assertEqual(resolve(url).func, views.search_location_result)

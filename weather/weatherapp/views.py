@@ -125,7 +125,7 @@ def logout(request: HttpRequest) -> HttpResponse:
     return redirect('home')
 
 
-def search_location(request: HttpRequest) -> HttpResponse:
+def search_location_result(request: HttpRequest) -> HttpResponse:
     if not is_loged_in(request):
         login_redirect = reverse('login')
         return redirect(login_redirect)
@@ -135,22 +135,8 @@ def search_location(request: HttpRequest) -> HttpResponse:
         if search_location_form.is_valid():
             do_search_location(request, search_location_form)
             search_location_result_url: str = reverse('search_location_result')
-            return redirect(search_location_result_url)
     else: 
         search_location_form: SearchLocationForm = SearchLocationForm()
-        
-    context: dict[str, Any] = {
-        'search_location_form': search_location_form,
-        'user_login': request.session.get('user_login'),
-    }
-    
-    return render(request, 'weatherapp/search_location.html', context=context)
-
-
-def search_location_result(request: HttpRequest) -> HttpResponse:
-    if not is_loged_in(request):
-        login_redirect = reverse('login')
-        return redirect(login_redirect)
     
     location_info: dict[str, Any] = request.session.get('location_info')
     location_name: str = ''
@@ -161,7 +147,7 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
         'user_login': request.session.get('user_login'),
         'location_info': location_info,
         'user_input_location_name': request.session.get('user_input_location_name'),
-        'search_location_form': SearchLocationForm(),
+        'search_location_form': search_location_form,
         'add_location_form': AddLocationForm({'location_name': location_name}),
         'messages': messages.get_messages(request),
     }
