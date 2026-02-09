@@ -3,6 +3,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.http import HttpResponse, HttpRequest
+from django.templatetags.static import static
 from django.test import TestCase, Client
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, Template
@@ -24,10 +25,12 @@ class TestViews(TestCase):
         weather_info_list: WeatherInfoList | None = None
         
         main_page_context: dict[str, Any] = {
-            'user_login': 'tmp', # None
+            'user_login': None, # None
             'search_location_form': forms.SearchLocationForm(),
             'messages': None,
             'url': reverse,
+            'static': static,
+            'zip': zip,
             'weather_info_list': [WeatherInfo( # weather_info_list
                 location_name = 'l_name',
                 temperature = 'l_temperature',
@@ -35,7 +38,6 @@ class TestViews(TestCase):
             )], # weather_info_list 
         }        
         content_from_index_template: str = tm.render(**main_page_context)
-        print(content_from_index_template)
         
         index_url: str = reverse('home')
         response: HttpResponse = self.client.get(index_url)
