@@ -1,0 +1,14 @@
+.row>div {
+    background: var(--bs-primary);
+    border: solid 2px red;
+}
+
+.container>div:first-child {
+    background-color: aqua;
+    height: 100px;
+}
+
+.header-separator{
+    margin-top: 10px;
+    margin-bottom: 0px;
+}

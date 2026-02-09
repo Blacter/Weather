@@ -48,6 +48,7 @@ class LoginForm(forms.Form):
         min_length=FORM_PRINTS['login_min_length'],
         max_length=FORM_PRINTS['login_max_length'],
         label=FORM_PRINTS['login_label'],
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
         validators=[
             acceptable_characters,
         ],
@@ -60,7 +61,7 @@ class LoginForm(forms.Form):
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
         label=FORM_PRINTS['password_label'],
-        widget=forms.PasswordInput(),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         error_messages={
             'min_length': FORM_PRINTS['password_min_length_error_msg'],
             'max_length': FORM_PRINTS['password_max_length_error_msg'],
@@ -107,6 +108,7 @@ class SignUpForm(forms.Form):
         min_length = FORM_PRINTS['login_min_length'],
         max_length = FORM_PRINTS['login_max_length'],
         label = FORM_PRINTS['login_label'],
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
         validators=[
             acceptable_characters
         ],
@@ -120,7 +122,7 @@ class SignUpForm(forms.Form):
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
         label=FORM_PRINTS['password_label'],
-        widget=forms.PasswordInput(),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         error_messages={
             'min_length': FORM_PRINTS['password_min_length_error_msg'],
             'max_length': FORM_PRINTS['password_max_length_error_msg'],
@@ -131,7 +133,7 @@ class SignUpForm(forms.Form):
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
         label=FORM_PRINTS['password_confirm_label'],
-        widget=forms.PasswordInput(),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         error_messages={
             'min_length': FORM_PRINTS['password_min_length_error_msg'],
             'max_length': FORM_PRINTS['password_max_length_error_msg'],
@@ -147,6 +149,7 @@ class SearchLocationForm(forms.Form):
     location_name = forms.CharField(
         max_length=FORM_PRINTS['location_name_max_length'],
         label=FORM_PRINTS['location_name_label'],
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
         error_messages={
             'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
             'required': FORM_PRINTS['field_required_error_msg'],

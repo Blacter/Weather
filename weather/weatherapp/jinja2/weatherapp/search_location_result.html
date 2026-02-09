@@ -5,34 +5,46 @@ search_location_result
 {% endblock title %}
 
 {% block header %}
-search_location_result
+<!-- search_location_result -->
 {{ super() }}
 {% endblock header %}
 
 {% block content %}
-search_location_results
+Результаты поиска
 {% if location_info['api_response_code'] == "200" %}
 
-<table>
-    <tr><th>Location</th><th>Country</th><th>Temperature</th><th>Lat</th><th>Lon</th><th></th></tr>
+<div class="table-responsive">
+<table class="table table-striped-columns table-hover text-center">
     <tr>
+        <th>Location</th>
         <td>{{ location_info['location_name'] }}</td>
+    </tr>
+    <tr>
+        <th>Country</th>
         <td>{{ location_info['country_code'] }}</td>
+    </tr>
+    <tr>
+        <th>Temperature</th>
         <td>{{ location_info['location_temperature'] }}</td>
+    </tr>
+    <tr>
+        <th>Lat</th>
         <td>{{ location_info['location_lat'] }}</td>
+    </tr>
+    <tr>
+        <th>Lon</th>
         <td>{{ location_info['location_lon'] }}</td>
-        <td>
-            <form action="{{ url('add_location') }}" method="post">
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
-                {{ add_location_form.location_name.as_hidden() }}
-                <input type="submit" value="Add">
-                {% if add_location_form.location_name.errors %}
-                    <div class="form-error">{{add_location_form.location_name.errors.as_text()}}</div>
-                {% endif %}
-            </form>
-        </td>
     </tr>
 </table>
+<form action="{{ url('add_location') }}" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+    {{ add_location_form.location_name.as_hidden() }}
+    <input class="btn btn-primary form-control" type="submit" value="Сохранить">
+    {% if add_location_form.location_name.errors %}
+        <div class="form-error">{{add_location_form.location_name.errors.as_text()}}</div>
+    {% endif %}
+</form>
+</div>
 
 {% if messages %}
 <ul class="messages">

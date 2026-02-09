@@ -5,7 +5,7 @@ Login
 {% endblock title %}
 
 {% block header %}
-Login
+<!-- Login -->
 {{ super() }}
 {% endblock header %}
 
@@ -21,8 +21,12 @@ Login
     {% endif %}
     <div class="input-form">        
         <div class="form-row">
-            <label for="{{login_form.user_login.id_for_label}}">{{login_form.user_login.label}}</label>
-            {{login_form.user_login}}
+            <label class="row" for="{{login_form.user_login.id_for_label}}">
+                <div class="col-12">{{login_form.user_login.label}}</div>
+            </label>
+            <div class="row">
+                <div class="col-12">{{login_form.user_login}}</div>
+            </div>
             {% if login_form.user_login.errors %}
                 <div class="login-field-error">
                 <div class="form-error">Ошибка в логине:</div>
@@ -33,8 +37,8 @@ Login
             {% endif %}
         </div>
         <div class="form-row">
-            <label for="{{login_form.user_password.id_for_label}}">{{login_form.user_password.label}}</label>
-            {{login_form.user_password}}
+            <label class="row" for="{{login_form.user_password.id_for_label}}"><div class="col-12">{{login_form.user_password.label}}</div></label>
+            <div class="col-12">{{login_form.user_password}}</div>
             {% if login_form.user_password.errors %}
                 <div class="password-field-error">
                     <div class="form-error ">Ошибка в пароле:</div>
@@ -45,7 +49,8 @@ Login
             {% endif %}
         </div>
     </div>
-    <input type="submit">
+    <br/>
+    <input type="submit" class="btn btn-primary form-control" value="Вход">
 </form>
 {% if is_error %}
 <div class="error_description">{{ error_description }}</div>
