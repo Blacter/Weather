@@ -19,7 +19,7 @@ FORM_PRINTS: dict[str, str|int] = {
     'login_min_length_error_msg': f'слишком короткий логин. Должен содержать хотя бы {LOGIN_MIN_LENGTH} символов.',
     'login_max_length_error_msg': f'слишком длинный логин. Должен содержать не более {LOGIN_MAX_LENGTH} символов.',
     'login_required_error_msg': 'обязательно для заполнения.',
-    'login_does_not_exist': 'Пользователь с данным логином не существует',
+    'login_does_not_exist': 'пользователь с данным логином не существует',
     
     'password_min_length': PASSWORD_MIN_LENGTH,
     'password_max_length': PASSWORD_MAX_LENGTH,
@@ -36,7 +36,7 @@ FORM_PRINTS: dict[str, str|int] = {
     'location_name_max_length': LOCATION_NAME_MAX_LENGTH,
     'location_name_label': 'Введите название города:',
     'location_name_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',
-    'search_location_location_exists_error': 'Локация уже существует',
+    'search_location_location_exists_error': 'локация уже существует',
     'server_error': 'Server Error, Pleace repead later',
     
     'location_addition_error': 'Ошибка при добавлении локации.',

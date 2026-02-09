@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../static/css/style.css">
-    <script src="../../static/js/script.js"></script>
+    <!-- <link rel="stylesheet" href="../../static/css/style.css">
+    <script src="../../static/js/script.js"></script> -->
     <title>{% block title %}{% endblock title %}</title>
     <link rel="stylesheet" href="{{ static('weatherapp/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ static('css/main.css') }}">
+    <link rel="stylesheet" href="{{ static('weatherapp/css/main.css') }}">
 </head>
 <body>
 <div class="container ">
@@ -33,16 +33,18 @@
                     </div>
                 </div>
             </div>
-            <form class="input-form" action="{{ url('search_location') }}" method="get">
+        </div> <!-- row -->
+        <div class="row">
+            <form class="input-form" action="{{ url('search_location_result') }}" method="get">
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
                 <div class="form-error">{{search_location_form.non_field_errors()}}</div>
                 <div class="input-form">
                     <label class="row" for="{{search_location_form.location_name.id_for_label}}">
                         <div class="col-12">{{search_location_form.location_name.label}}</div>
-                    </label>                    
+                    </label>
                     <div class="row">
                         <div class="col-sm-8 col-md-4">{{search_location_form.location_name}}</div>
-                        <input type="submit" class="col-sm-3 col-md-2  btn btn-primary" value="Поиск">
+                        <div class="col-sm-3 col-md-2 margin-top-10"><input type="submit" class="btn btn-primary form-control" value="Поиск"></div>
                     </div>
                     {% if search_location_form.location_name.errors %}
                         <div class="form-error">{{search_location_form.location_name.errors.as_text()}}</div>

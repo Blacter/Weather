@@ -10,54 +10,53 @@ search_location_result
 {% endblock header %}
 
 {% block content %}
-Результаты поиска
+Результаты поиска:
 {% if location_info['api_response_code'] == "200" %}
 
-<div class="table-responsive">
-<table class="table table-striped-columns table-hover text-center">
-    <tr>
-        <th>Location</th>
-        <td>{{ location_info['location_name'] }}</td>
-    </tr>
-    <tr>
-        <th>Country</th>
-        <td>{{ location_info['country_code'] }}</td>
-    </tr>
-    <tr>
-        <th>Temperature</th>
-        <td>{{ location_info['location_temperature'] }}</td>
-    </tr>
-    <tr>
-        <th>Lat</th>
-        <td>{{ location_info['location_lat'] }}</td>
-    </tr>
-    <tr>
-        <th>Lon</th>
-        <td>{{ location_info['location_lon'] }}</td>
-    </tr>
-</table>
-<form action="{{ url('add_location') }}" method="post">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
-    {{ add_location_form.location_name.as_hidden() }}
-    <input class="btn btn-primary form-control" type="submit" value="Сохранить">
-    {% if add_location_form.location_name.errors %}
-        <div class="form-error">{{add_location_form.location_name.errors.as_text()}}</div>
+    <div class="table-responsive">
+    <table class="table table-striped-columns table-hover text-center">
+        <tr>
+            <th>Location</th>
+            <td>{{ location_info['location_name'] }}</td>
+        </tr>
+        <tr>
+            <th>Country</th>
+            <td>{{ location_info['country_code'] }}</td>
+        </tr>
+        <tr>
+            <th>Temperature</th>
+            <td>{{ location_info['location_temperature'] }}</td>
+        </tr>
+        <tr>
+            <th>Lat</th>
+            <td>{{ location_info['location_lat'] }}</td>
+        </tr>
+        <tr>
+            <th>Lon</th>
+            <td>{{ location_info['location_lon'] }}</td>
+        </tr>
+    </table>
+    <form action="{{ url('add_location') }}" method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+        {{ add_location_form.location_name.as_hidden() }}
+        <input class="btn btn-primary form-control" type="submit" value="Сохранить">
+        {% if add_location_form.location_name.errors %}
+            <div class="form-error">{{add_location_form.location_name.errors.as_text()}}</div>
+        {% endif %}
+    </form>
+    </div>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
-</form>
-</div>
-
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
 {% elif location_info['api_response_code'] == "404" %}
-Локация с названием {{user_input_location_name}} не найдена.
+<div class="error">локация с названием {{user_input_location_name}} не найдена.</div>
 {% elif location_info['api_response_code'] is none %}
-Ошибка получения данных.
+<div class="error">ошибка получения данных.</div>
 {% endif %}
 
 {% endblock content %}

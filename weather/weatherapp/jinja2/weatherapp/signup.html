@@ -12,7 +12,13 @@ Sign Up
 {% block content %}
 <form action="{{ url('signup') }}" method="post">
     <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
-    <div class="form-error">{{signup_form.non_field_errors()}}</div>
+    {% if signup_form.non_field_errors() %}
+        <div class="form-error form-general-error">Ошибка:
+        {% for error in signup_form.non_field_errors() %}
+            <div class="form-error">{{error}}</div>
+        {% endfor %}
+        </div>
+    {% endif %}
     <div class="input-form">        
         <div class="form-row">
             <label class="row" for="{{signup_form.user_login.id_for_label}}">
@@ -21,9 +27,10 @@ Sign Up
             <div class="row">
                 <div class="col-12">{{signup_form.user_login}}</div>
             </div>
-            <div class="form-error">
-                {{signup_form.user_login.errors}}
-            </div>
+
+            {% for signup_error in signup_form.user_login.errors %}
+                <div class="form-error">Ошибка в логине: {{signup_error}}</div>
+            {% endfor %}
         </div>
         <div class="form-row">            
             <label class="row" for="{{signup_form.user_password.id_for_label}}">
@@ -36,16 +43,16 @@ Sign Up
                     {{signup_form.user_password}}
                 </div>
             </div>
-            {% if signup_form.user_password.errors %}
-                <div class="form-error">Ошибка в пароле: {{signup_form.user_password.errors.as_text()}}</div>
-            {% endif %}
+            {% for error in signup_form.user_password.errors %}
+                <div class="form-error">Ошибка в пароле: {{error}}</div>
+            {% endfor %}
         </div>
         <div class="form-row">
-            <label for="{{signup_form.user_password_confirm.id_for_label}}">{{signup_form.user_password_confirm.label}}</label>
+            <label for="{{signup_form.user_password_confirm.id_for_label}}">{{signup_form.user_password_confirm.label}}</label>            
             {{signup_form.user_password_confirm}}
-            {% if signup_form.user_password_confirm.errors %}
-                <div class="form-error">Ошибка в пароле: {{signup_form.user_password_confirm.errors.as_text()}}</div>
-            {% endif %}
+            {% for error in signup_form.user_password_confirm.errors %}
+                <div class="form-error">Ошибка в пароле: {{error}}</div>
+            {% endfor %}
         </div>
     </div>
     <br/>
