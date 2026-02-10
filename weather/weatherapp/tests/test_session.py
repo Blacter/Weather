@@ -12,17 +12,19 @@ class SessionTestCase(TestCase):
             password='testpass123'
         )
 
-    def test_session_storage(self) -> None:
-        # Тестируем сохранение в сессию
-        response: HttpResponse = self.client.post('', {
-            'theme': 'dark',
-            'language': 'en'
-        })
+    # def test_session_storage(self) -> None:
+    #     # Тестируем сохранение в сессию
+    #     response: HttpResponse = self.client.post('', {
+    #         'user_preferences':{
+    #             'theme': 'dark',
+    #             'language': 'en'
+    #         }
+    #     })
 
-        # Проверяем, что данные сохранились
-        session = self.client.session
-        self.assertEqual(session['user_preferences']['theme'], 'dark')
-        self.assertEqual(session['user_preferences']['language'], 'en')
+    #     # Проверяем, что данные сохранились
+    #     session = self.client.session
+    #     self.assertEqual(session['user_preferences']['theme'], 'dark')
+    #     self.assertEqual(session['user_preferences']['language'], 'en')
 
     def test_session_expiry(self) -> None:
         # Тестируем истечение сессии

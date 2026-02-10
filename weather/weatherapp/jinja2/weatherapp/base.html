@@ -43,8 +43,8 @@
                         <div class="col-12">{{search_location_form.location_name.label}}</div>
                     </label>
                     <div class="row">
-                        <div class="col-sm-8 col-md-4">{{search_location_form.location_name}}</div>
-                        <div class="col-sm-3 col-md-2 margin-top-10"><input type="submit" class="btn btn-primary form-control" value="Поиск"></div>
+                        <div class="col-sm-8 col-md-4 margin-bottom-adaptive">{{search_location_form.location_name}}</div>
+                        <div class="col-sm-3 col-md-"><input type="submit" class="btn btn-primary form-control" value="Поиск"></div>
                     </div>
                     {% if search_location_form.location_name.errors %}
                         <div class="form-error">{{search_location_form.location_name.errors.as_text()}}</div>

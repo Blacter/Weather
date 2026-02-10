@@ -21,6 +21,14 @@
     color: red; /*var(--bs-danger); */
 }
 
-.margin-top-10{
-    margin-top: 10px;
+@media(max-width: 576px){
+    .margin-bottom-adaptive{
+        margin-bottom: 10px;
+    }
+}
+
+@media(min-width: 576px){
+    .margin-bottom-adaptive{
+        margin-bottom: 0px;
+    }
 }

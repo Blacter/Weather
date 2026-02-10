@@ -9,7 +9,7 @@ from django.http import HttpResponseServerError, Http404
 from django.db.models import QuerySet
 from django.urls import reverse
 
-from .forms import LoginForm, SignUpForm, SearchLocationForm
+from .forms import LoginForm, SignUpForm, SearchLocationForm, DeleteLocationForm
 from .models import User, Location
 from .open_weather_works import OpenWeatherWorks
 from .repository.location_works import LocationWorks
@@ -63,7 +63,7 @@ def save_location_info(request: HttpRequest, search_location_form: SearchLocatio
     location_name: str = search_location_form.cleaned_data['location_name']
     weather_api: OpenWeatherWorks = OpenWeatherWorks()
     weather_api.get_lat_and_lot_by_city(city_name=location_name)
-    location_info: dict[str, str | None] | None = weather_api.location_info()
+    location_info: dict[str, str | None] | None = weather_api.location_info() # TODO: implement result return with dataclasses?
     request.session['location_info'] = location_info 
 
 
@@ -91,6 +91,15 @@ def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInf
         ))
     
     return weather_info_list
+
+def get_delete_location_form_list(weather_info_list: WeatherInfoList) -> list[DeleteLocationForm]:
+    delete_location_form_list: list[DeleteLocationForm] = []
+    for weather_info in weather_info_list:
+            delete_location_form_list.append(
+                DeleteLocationForm({'location_name': weather_info.location_name})
+            )
+    return delete_location_form_list
+    
 
 
 def do_delete_location(request: HttpRequest, user_login: str, location_name_to_delete: str) -> None:

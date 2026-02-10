@@ -75,11 +75,9 @@ class SignUpForm(forms.Form):
                
         self.check_password_confirmed()
         self.check_user_not_exists()
-        
-        # TODO: check unique login.
         # TODO: [check password reliability]
 
-        return self.cleaned_data
+        return self.cleaned_data # ??? Needs to be returned ?
     
     def check_password_confirmed(self) -> None:
         user_password: str | None = self.cleaned_data.get('user_password')
@@ -142,7 +140,7 @@ class SignUpForm(forms.Form):
 
 
 class SearchLocationForm(forms.Form):    
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]: # FIXME: seems this funtion is useless.
         self.cleaned_data: dict[str, Any] = super().clean()            
         return self.cleaned_data
     
@@ -203,3 +201,4 @@ class DeleteLocationForm(forms.Form):
             'required': FORM_PRINTS['field_required_error_msg'],
         },
     )
+    

@@ -18,7 +18,7 @@ from .type_aliaces import WeatherInfoList
 from .settings import FORM_PRINTS
 from .utils import (
     do_login, do_signup, do_search_location, do_add_location, do_delete_location,
-    is_loged_in, get_home_url, get_weather_info_list,
+    is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list
     )
 
 
@@ -46,19 +46,14 @@ def index(request: HttpRequest) -> HttpResponse:
             
         weather_info_page: int = 1
         weather_info_list = get_weather_info_list(user_login, weather_info_page)
-                    
-        # TODO: Separate in function.
-        for weather_info in weather_info_list:
-            delete_location_form_list.append(
-                DeleteLocationForm({'location_name': weather_info.location_name})
-            )
+        delete_location_form_list = get_delete_location_form_list(weather_info_list)
 
     main_page_context: dict[str, Any] = {
+        'messages': messages.get_messages(request),
         'user_login': request.session.get('user_login'),
         'search_location_form': SearchLocationForm(),
-        'messages': messages.get_messages(request),
-        'weather_info_list': weather_info_list,
         'delete_location_form_list': delete_location_form_list,
+        'weather_info_list': weather_info_list,
     }
     
     return render(request, 'weatherapp/index.html', context=main_page_context)
@@ -67,8 +62,7 @@ def index(request: HttpRequest) -> HttpResponse:
 def login(request: HttpRequest) -> HttpResponse:
     status: int = 200
     if is_loged_in(request):
-        home_redirect = get_home_url()
-        
+        home_redirect = get_home_url()        
         return redirect(home_redirect)
     
     if request.POST:
@@ -85,8 +79,8 @@ def login(request: HttpRequest) -> HttpResponse:
         login_form = LoginForm()
 
     context: dict[str, Any] = {
-        'login_form': login_form,
         'messages': messages.get_messages(request),
+        'login_form': login_form,
     }
 
     return render(request, 'weatherapp/login.html', context=context, status=status)
@@ -112,8 +106,8 @@ def signup(request: HttpRequest) -> HttpResponse:
         signup_form = SignUpForm()
 
     context: dict[str, Any] = {
-        'signup_form': signup_form,
         'messages': messages.get_messages(request),
+        'signup_form': signup_form,
     }
 
     return render(request, 'weatherapp/signup.html', context=context, status=status)
@@ -134,7 +128,7 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
         search_location_form: SearchLocationForm = SearchLocationForm(request.GET)
         if search_location_form.is_valid():
             do_search_location(request, search_location_form)
-            search_location_result_url: str = reverse('search_location_result')
+            # search_location_result_url: str = reverse('search_location_result')
     else: 
         search_location_form: SearchLocationForm = SearchLocationForm()
     
@@ -144,12 +138,12 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
         location_name: str = location_info.get('location_name')
     
     context: dict[str, Any] = {
+        'messages': messages.get_messages(request),
         'user_login': request.session.get('user_login'),
+        'search_location_form': search_location_form,
+        'add_location_form': AddLocationForm({'location_name': location_name}),        
         'location_info': location_info,
         'user_input_location_name': request.session.get('user_input_location_name'),
-        'search_location_form': search_location_form,
-        'add_location_form': AddLocationForm({'location_name': location_name}),
-        'messages': messages.get_messages(request),
     }
     
     return render(request, 'weatherapp/search_location_result.html', context=context)
@@ -166,13 +160,13 @@ def add_location(request: HttpRequest) -> HttpResponse:
         try:
             add_location_form: AddLocationForm = AddLocationForm(request.POST, request=request)
             if add_location_form.is_valid():
-                print(f'do_add_location')
                 do_add_location(request)
                 home_redirect = reverse('home')
                 messages.success(request, message=FORM_PRINTS['location_addition_success'])
                 return redirect(home_redirect)                
             else:
-                ValidationError(FORM_PRINTS['location_addition_error'])
+                ValidationError(FORM_PRINTS['location_addition_error']) # FIXME!
+                messages.error(request, FORM_PRINTS['location_addition_error'])
         except ValidationError:
             raise
         except OperationalError:
@@ -185,11 +179,12 @@ def add_location(request: HttpRequest) -> HttpResponse:
         location_name: str = location_info.get('location_name')
     
     context: dict[str, Any] = {
+        'messages': messages.get_messages(request),
         'user_login': request.session.get('user_login'),
-        'location_info': location_info,
-        'user_input_location_name': request.session.get('user_input_location_name'),
         'search_location_form': SearchLocationForm(),
         'add_location_form': AddLocationForm({'location_name': location_name}),        
+        'location_info': location_info,
+        'user_input_location_name': request.session.get('user_input_location_name'),
     }
     
     return render(request, 'weatherapp/search_location_result.html', context=context, status=status)
