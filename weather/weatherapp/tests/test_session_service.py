@@ -48,7 +48,7 @@ class TestGetSession(TestCase):
         session_data = session_service.get_session_user_data()
 
         self.assertEqual(self.session_id, session_service.get_session_id())
-        self.assertIsNone(session_data)
+        self.assertEqual(session_data, {})
 
 
 class TestSetSessionUserData(TransactionTestCase):
@@ -60,11 +60,28 @@ class TestSetSessionUserData(TransactionTestCase):
             login='Lisa',
             password='1234'
         )
+
+    def test_set_session_user_data_in_new_session(self) -> None:
+        session_service: SessionService = SessionService(user_login='Lisa')
+        self.session_id: str = session_service.get_session_id()
+        user_data = {
+            'is_logged_in': True,
+            'color_theme': 'Light',
+            'randint': random.randint(0, 1000),
+        }
+        session_service.set_session_user_data(user_data)
+        del session_service
+
+        session_user_data_from_db = json.loads(
+            Session.objects.get(id=self.session_id).session_data
+        )
+        self.assertEqual(user_data, session_user_data_from_db)
+
+    def test_set_session_user_data_in_old_session(self) -> None:
         session_service: SessionService = SessionService(user_login='Lisa')
         self.session_id: str = session_service.get_session_id()
         del session_service
 
-    def test_set_session_user_data(self) -> None:
         session_service: SessionService = SessionService(
             user_login='Lisa',
             session_id=self.session_id
@@ -87,11 +104,28 @@ class TestGetSessionUserData(TestCase):
             login='Lisa',
             password='1234'
         )
+
+    def test_custom_session_get_session_without_stored_data(self) -> None:
+        session_service: SessionService = SessionService(user_login='Lisa')
+        self.session_id: str = session_service.get_session_id()
+        self.random_int: int = random.randint(0, 1000)
+        del session_service
+
+        session_service: SessionService = SessionService(
+            user_login='Lisa',
+            session_id=self.session_id
+        )
+        session_user_data = session_service.get_session_user_data()
+
+        self.assertEqual(self.session_id, session_service.get_session_id())
+        self.assertEqual(session_user_data, {})
+
+    def test_custom_session_get_session_with_stored_data(self) -> None:
         session_service: SessionService = SessionService(user_login='Lisa')
         self.session_id: str = session_service.get_session_id()
         self.random_int: int = random.randint(0, 1000)
         session_service.set_session_user_data(
-            session_data={
+            session_user_data={
                 'color_theme': 'light',
                 'user_id': 2,
                 'user_login': 'Lisa',
@@ -100,7 +134,6 @@ class TestGetSessionUserData(TestCase):
         )
         del session_service
 
-    def test_custom_session_get_session_with_data(self) -> None:
         session_service: SessionService = SessionService(
             user_login='Lisa',
             session_id=self.session_id

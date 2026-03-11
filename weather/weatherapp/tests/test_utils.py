@@ -16,7 +16,7 @@ class TestAddLocationUtilsSuccess(TestCase):
             login='Ivan',
             password=make_password('1234'),
         )
-        
+
     def test_location_add_success(self) -> None:
         request: HttpRequest = HttpRequest()
         request.session = {}
@@ -30,14 +30,14 @@ class TestAddLocationUtilsSuccess(TestCase):
             'location_lon': 55.7522,
         }
         do_add_location(request)
-        try: 
+        try:
             added_location: Location = Location.objects.get(
                 user_id=self.user.pk,
                 name=request.session['location_info']['location_name']
             )
         except Location.DoesNotExist:
             self.fail('add location utils error')
-            
+
         self.assertEqual(added_location.user_id.pk, self.user.pk)
         self.assertEqual(added_location.name, request.session['location_info']['location_name'])
 
@@ -46,10 +46,10 @@ class MockResponse:
     def __init__(self, json_data: dict, status_code: int) -> None:
         self.json_data = json_data
         self.status_code = status_code
-        
+
     def json(self) -> dict:
         return self.json_data
-    
+
 
 def side_effect(request_url: str) -> str:
     city_name = urlparse(request_url).query.split('&')[0].split('=')[1]
@@ -100,21 +100,21 @@ def side_effect(request_url: str) -> str:
             }
     return MockResponse(return_data, 404)
 
-        
+
 class TestGetWeatherInfoList(TestCase):
     @patch('weatherapp.open_weather_works.requests.get')
-    def test_get_weather_info_list(self, mock_get) -> None:        
+    def test_get_weather_info_list(self, mock_get) -> None:
         mock_get.side_effect = side_effect
-        
+
         user_name: str = 'Ivan'
         user_password: str = '1234'
-        location_names_list: list[str] = []       
+        location_names_list: list[str] = []
         lat: float = 10.0
         lon: float = 10.0
         weather_list_benchmark: WeatherInfoList = []
         temperature = '24'
         country_code = 'PH'
-                
+
         user: User = User.objects.create(login=user_name, password=user_password)
         for location_name in location_names_list:
             Location.objects.create(name=location_name, user_id=user, latitude=lat, longitude=lon)
@@ -122,25 +122,25 @@ class TestGetWeatherInfoList(TestCase):
                 location_name = location_name,
                 temperature = temperature,
                 country_code = country_code,
-            ))        
-        
+            ))
+
         weather_list = get_weather_info_list('Ivan', 1)
         self.assertEqual(weather_list, weather_list_benchmark)
         # mock_get.assert_called_with('https://api.openweathermap.org/data/2.5/weather')
-        
+
     @patch('weatherapp.open_weather_works.requests.get')
     def test_get_weather_info_list_with_one_elements(self, mock_get) -> None:        
         mock_get.side_effect = side_effect
-        
+
         user_name: str = 'Ivan'
         user_password: str = '1234'
-        location_names_list: list[str] = ['Volgograd']        
+        location_names_list: list[str] = ['Volgograd']
         lat: float = 10.0
         lon: float = 10.0
         weather_list_benchmark: WeatherInfoList = []
         temperature = '24'
         country_code = 'PH'
-                
+
         user: User = User.objects.create(login=user_name, password=user_password)
         for location_name in location_names_list:
             Location.objects.create(name=location_name, user_id=user, latitude=lat, longitude=lon)
@@ -148,25 +148,25 @@ class TestGetWeatherInfoList(TestCase):
                 location_name = location_name,
                 temperature = temperature,
                 country_code = country_code,
-            ))        
-        
+            ))
+
         weather_list = get_weather_info_list('Ivan', 1)
         self.assertEqual(weather_list, weather_list_benchmark)
         # mock_get.assert_called_with('https://api.openweathermap.org/data/2.5/weather')
-    
+
     @patch('weatherapp.open_weather_works.requests.get')
-    def test_get_weather_info_list_with_two_elements(self, mock_get) -> None:        
+    def test_get_weather_info_list_with_two_elements(self, mock_get) -> None:
         mock_get.side_effect = side_effect
-        
+
         user_name: str = 'Ivan'
         user_password: str = '1234'
-        location_names_list: list[str] = ['Volgograd', 'Moscow']        
+        location_names_list: list[str] = ['Volgograd', 'Moscow']
         lat: float = 10.0
         lon: float = 10.0
         weather_list_benchmark: WeatherInfoList = []
         temperature = '24'
         country_code = 'PH'
-                
+
         user: User = User.objects.create(login=user_name, password=user_password)
         for location_name in location_names_list:
             Location.objects.create(name=location_name, user_id=user, latitude=lat, longitude=lon)
@@ -174,25 +174,25 @@ class TestGetWeatherInfoList(TestCase):
                 location_name = location_name,
                 temperature = temperature,
                 country_code = country_code,
-            ))        
-        
+            ))
+
         weather_list = get_weather_info_list('Ivan', 1)
         self.assertEqual(weather_list, weather_list_benchmark)
         # mock_get.assert_called_with('https://api.openweathermap.org/data/2.5/weather')
-    
+
     @patch('weatherapp.open_weather_works.requests.get')
-    def test_get_weather_info_list_with_six_elements(self, mock_get) -> None:        
+    def test_get_weather_info_list_with_six_elements(self, mock_get) -> None:
         mock_get.side_effect = side_effect
-        
+
         user_name: str = 'Ivan'
         user_password: str = '1234'
-        location_names_list: list[str] = ['Volgograd', 'Moscow', 'Tver\'', 'Minsk', 'Paris', 'London']        
+        location_names_list: list[str] = ['Volgograd', 'Moscow', 'Tver\'', 'Minsk', 'Paris', 'London']
         lat: float = 10.0
         lon: float = 10.0
         weather_list_benchmark: WeatherInfoList = []
         temperature = '24'
         country_code = 'PH'
-                
+
         user: User = User.objects.create(login=user_name, password=user_password)
         for location_name in location_names_list:
             Location.objects.create(name=location_name, user_id=user, latitude=lat, longitude=lon)
@@ -200,9 +200,8 @@ class TestGetWeatherInfoList(TestCase):
                 location_name = location_name,
                 temperature = temperature,
                 country_code = country_code,
-            ))        
-        
+            ))
+
         weather_list = get_weather_info_list('Ivan', 1)
         self.assertEqual(weather_list, weather_list_benchmark)
         # mock_get.assert_called_with('https://api.openweathermap.org/data/2.5/weather')
-        

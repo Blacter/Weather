@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from django.template.loader import render_to_string
 
-# from weather.jinja2 import environment
+from weather.jinja2 import environment
 
 from .forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm,  DeleteLocationForm
 from .type_aliaces import WeatherInfoList
@@ -19,6 +19,39 @@ from .settings import FORM_PRINTS
 from .utils import (
     do_login, do_signup, do_search_location, do_add_location, do_delete_location,
     is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list
+    )
+
+from .session.session import SessionService
+
+from django.views.generic import TemplateView
+
+import random
+def session_test(request: HttpRequest) -> HttpResponse:
+    print(f'{request.COOKIES=}')
+
+    # get existing session:
+    # session: SessionService = SessionService(
+    #     user_login='Lisa',
+    #     # session_id='56b1f4b9-12f3-4c26-8d04-e4ee97d7f339'
+    # )
+
+    session_id: str = 'None'
+
+    if SessionService.is_session_service_exists(request):
+        session_id: str = request.session_service.get_session_id()
+        session_user_data: dict[str, Any] = request.session_service.get_session_user_data()
+        if 'num_requests_to_test_session_page' in session_user_data:
+            session_user_data['num_requests_to_test_session_page'] += 1
+        else:
+            session_user_data['num_requests_to_test_session_page'] = 0
+
+        request.session_service.set_session_user_data(session_user_data)
+
+    title_row = f'session results {random.randint(0,1000)}:<br>'
+        # session.delete_session()
+
+    return HttpResponse(
+        title_row + f'{session_id = }</br>'
     )
 
 
@@ -31,6 +64,7 @@ def server_error(request: HttpRequest) -> HttpResponseNotFound:
 
 
 def index(request: HttpRequest) -> HttpResponse:
+
     weather_info_list: WeatherInfoList | None = None
     delete_location_form_list: list[DeleteLocationForm] = []
     if is_loged_in(request):
@@ -62,9 +96,9 @@ def index(request: HttpRequest) -> HttpResponse:
 def login(request: HttpRequest) -> HttpResponse:
     status: int = 200
     if is_loged_in(request):
-        home_redirect = get_home_url()        
+        home_redirect = get_home_url()
         return redirect(home_redirect)
-    
+
     if request.POST:
         login_form: LoginForm = LoginForm(request.POST)
         try:

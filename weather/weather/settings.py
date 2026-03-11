@@ -23,7 +23,8 @@ class Settings(BaseSettings):
     APPID: str
     class Config:
         # FIXME Исправить на относительный путь, но чтобы запускался и в debug, и в python manage.py runserver
-        env_file=r'weather/.env'
+        # env_file=r'weather\.env'
+        env_file=r'C:\Users\slawa\Desktop\Python\00.Pet_Projects\08.Weather\Weather\weather\weather\.env'
 
 settings: Settings = Settings()
 
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'weatherapp.session.middleware.CustomSessionMiddleware'
 ]
 
 ROOT_URLCONF = 'weather.urls'
@@ -160,4 +162,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE  = 3600
+CUSTOM_SESSION_COOKIE_AGE = 31809906.0
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

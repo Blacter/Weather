@@ -5,6 +5,7 @@ import json
 from typing import Any
 
 from django.conf import settings
+from django.http import HttpRequest
 
 from weatherapp.models import Session, User
 from weatherapp.repository.utils import get_user_by_user_id
@@ -24,10 +25,15 @@ class ExpireDate:
         ...
 
 class SessionService:
+    @staticmethod
+    def is_session_service_exists(request: HttpRequest) -> bool:
+        return hasattr(request, 'session_service')
+
     def __init__(
             self,
             user_login: str,
-            session_id: str | None = None) -> None:
+            session_id: str | None = None
+        ) -> None:
 
         self._session_id: str | None = session_id
         self._user: User = User.objects.get(login=user_login)
@@ -44,6 +50,7 @@ class SessionService:
         self._expire_datetime_utc: datetime
         self._calculate_expare_at()
         self._create_session_in_db()
+        self._get_session_id()
 
     def _get_exsisting_session(self) -> None:
         self._session = Session.objects.get(id=self._session_id)
@@ -60,6 +67,9 @@ class SessionService:
             expire_at=self._expire_datetime_utc,
             user_id=self._user,
         )
+
+    def _get_session_id(self) -> None:
+        self._session_id = self._session.id
 
     def set_session_user_data(self, session_user_data: dict[str, Any]) -> None:
         self._session_user_data_to_save = deepcopy(session_user_data)
@@ -83,13 +93,16 @@ class SessionService:
 
     def _deserialize_data(self) -> None:
         data_to_deserialize: str = self._session.session_data
-        self._deserialized_data: dict = json.loads(data_to_deserialize)
+        self._deserialized_data: dict = json.loads(data_to_deserialize) or {} # Make Unit Test !
 
     def delete_session(self) -> None:
         Session.objects.filter(id=self._session.id).delete()
 
     def get_session_id(self) -> str:
         return self._session.id
+
+    def get_user_name(self) -> str:
+        return User.objects.get(id=self._session.user_id.id).login
 
 
 # if __name__ == 'weatherapp.session.session':

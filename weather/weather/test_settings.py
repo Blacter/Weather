@@ -12,6 +12,21 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    DATABASE_NAME: str
+    DATABASE_USER: str
+    DATABASE_PASSWORD: str
+    DATABASE_HOST: str
+    DATABASE_PORT: str
+    APPID: str
+    class Config:
+        # FIXME Исправить на относительный путь, но чтобы запускался и в debug, и в python manage.py runserver
+        env_file=r'weather/.env_test'
+
+settings: Settings = Settings()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tf@_7v6l+&4nw_v5+o3^*0xz%hs(3b)5*9ll(=5a=-@ryo6^)*'
+SECRET_KEY = '036c7b1114a05396ffe3dedefcffa484'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,16 +99,28 @@ WSGI_APPLICATION = 'weather.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test_db.sqlite3',
-        'TEST': {
-            'NAME': BASE_DIR / 'test_db.sqlite3',
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': settings.DATABASE_NAME,
+        'USER': settings.DATABASE_USER,
+        'PASSWORD': settings.DATABASE_PASSWORD,
+        'HOST': settings.DATABASE_HOST,
+        'PORT': settings.DATABASE_PORT,
+        'CONN_MAX_AGE': 60, # 1 минута
+        # 'TEST': {
+        #     'NAME': 'test_' + settings.DATABASE_NAME,
+        #     # 'KEEP_DB': True,
+        # }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -137,4 +164,5 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_COOKIE_AGE  = 3600
+CUSTOM_SESSION_COOKIE_AGE = 3600.0
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

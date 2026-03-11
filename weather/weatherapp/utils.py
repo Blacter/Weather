@@ -74,13 +74,13 @@ def save_in_session(request: HttpRequest, key: str, value: Any) -> None:
 def do_add_location(request: HttpRequest) -> None:    
     location_works: LocationWorks = LocationWorks(request)
     location_works.save_location()
-    
+
 
 def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInfoList:
     locations: QuerySet[Location] = get_locations_by_user_name(user_login)
     weather_api: OpenWeatherWorks = OpenWeatherWorks()    
     weather_info_list: WeatherInfoList = []
-    
+
     for location in locations:
         weather_api.get_weather_by_city_name(location.name)
         weather_info: dict[str, str | None] | None = weather_api.location_info()
@@ -89,8 +89,8 @@ def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInf
             temperature = weather_info['location_temperature'],
             country_code = weather_info['country_code'],
         ))
-    
     return weather_info_list
+
 
 def get_delete_location_form_list(weather_info_list: WeatherInfoList) -> list[DeleteLocationForm]:
     delete_location_form_list: list[DeleteLocationForm] = []
@@ -99,7 +99,6 @@ def get_delete_location_form_list(weather_info_list: WeatherInfoList) -> list[De
                 DeleteLocationForm({'location_name': weather_info.location_name})
             )
     return delete_location_form_list
-    
 
 
 def do_delete_location(request: HttpRequest, user_login: str, location_name_to_delete: str) -> None:
@@ -108,4 +107,3 @@ def do_delete_location(request: HttpRequest, user_login: str, location_name_to_d
         messages.success(request, FORM_PRINTS['delete_location_success'])
     except Location.DoesNotExist:
         messages.error(request, FORM_PRINTS['delete_location_does_not_exist'])
-    

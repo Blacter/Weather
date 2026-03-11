@@ -4,6 +4,8 @@ from django.urls import URLPattern
 from weatherapp import views
 
 urlpatterns: list[URLPattern] = [
+    path('test_session/', views.session_test, name='test_session'),
+
     path('', views.index, name='home'),
     path('login/', views.login, name='login'),
     path('signup/', views.signup, name='signup'),

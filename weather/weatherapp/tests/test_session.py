@@ -32,7 +32,7 @@ class SessionTestCase(TestCase):
         session['test_data'] = 'value'
         session.set_expiry(1)
         session.save()
-        
+
         time.sleep(2)
 
         self.assertNotIn('test_data', self.client.session)
