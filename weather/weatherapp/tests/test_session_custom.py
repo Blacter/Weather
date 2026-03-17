@@ -139,14 +139,12 @@ class TestSessionService(TestCase):
         session_id_initial, session_login_initial = session_service.get_session_id_and_login()
         session_service[key_1] = val_1
         session_service[key_2] = val_2
-        print(f'{session_service.is_session_valid=}')
         session_service.save_data_in_db()
         del session_service
 
         session_service: SessionService = SessionService()
         session_service.set_session_id_and_login(session_id_initial, session_login_initial)
         session_service.get_existing_session_if_valid()
-        print(f'{session_service.is_session_valid=}')
 
         self.assertEqual(session_service[key_1], val_1)
         self.assertEqual(session_service[key_2], val_2)

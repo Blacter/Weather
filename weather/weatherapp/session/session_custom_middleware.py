@@ -18,6 +18,8 @@ class SessionMiddleware:
 
         response = self.get_response(request)
 
+        if request.session_service.is_session_valid:
+            request.session_service.save_data_in_db()
         session_id, login = request.session_service.get_session_id_and_login()
 
         if session_id is not None and login is not None:
@@ -31,5 +33,18 @@ class SessionMiddleware:
                 value=login,
                 httponly=True,
             )
+        else:
+            response.delete_cookie('session_id_custom')
+            response.delete_cookie('login')
+            # response.set_cookie(
+            #     key='session_id_custom',
+            #     value=session_id,
+            #     httponly=True,
+            # )
+            # response.set_cookie(
+            #     key='login',
+            #     value=login,
+            #     httponly=True,
+            # )
 
         return response

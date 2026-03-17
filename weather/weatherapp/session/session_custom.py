@@ -34,6 +34,11 @@ class SessionDataService:
     def __delitem__(self, key) -> None:
         del self._session_data[key]
 
+    def get(self, item) -> Any | None:
+        if item in self._session_data:
+            return self._session_data[item]
+        else:
+            return None
 
 class SessionService(SessionDataService):
     def __init__(self):
@@ -110,6 +115,8 @@ class SessionService(SessionDataService):
     def _delete_session(self):
         self._delete_session_from_db()
         self.delete_session_id_and_login_values()
+        self._is_session_exists = False
+        self._is_session_valid = False
 
     def _delete_session_from_db(self):
         try:
@@ -124,6 +131,7 @@ class SessionService(SessionDataService):
             expire_at=expire_date,
             user_id=User.objects.get(login=login)
         )
+        print(f'{self._session_model=}')
         self._session_model.save()
         self._session_id = self._session_model.id
         self._login = self._session_model.user_id.login
@@ -133,6 +141,7 @@ class SessionService(SessionDataService):
         self._is_session_valid = True
 
     def save_data_in_db(self) -> None:
-        serialized_data: str = json.dumps(self._session_data)
-        self._session_model.session_data = serialized_data
-        self._session_model.save()
+        if self.is_session_valid: #and hasattr(self, self._session_model):
+            serialized_data: str = json.dumps(self._session_data)
+            self._session_model.session_data = serialized_data
+            self._session_model.save()
