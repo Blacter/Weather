@@ -15,6 +15,10 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 class Settings(BaseSettings):
     DATABASE_NAME: str
     DATABASE_USER: str
@@ -25,12 +29,10 @@ class Settings(BaseSettings):
     class Config:
         # FIXME Исправить на относительный путь, но чтобы запускался и в debug, и в python manage.py runserver
         # env_file=r'weather\.env'
-        env_file=r'C:\Users\slawa\Desktop\Python\00.Pet_Projects\08.Weather\Weather\weather\weather\.env'
+        # env_file=r'C:\Users\slawa\Desktop\Python\00.Pet_Projects\08.Weather\Weather\weather\weather\.env'
+        env_file=BASE_DIR / 'weather' / '.env'
 
 settings: Settings = Settings()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production

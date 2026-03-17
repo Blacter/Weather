@@ -19,12 +19,16 @@ from .type_aliaces import WeatherInfo, WeatherInfoList
 
 
 def do_login(request: HttpRequest, login_form: LoginForm) -> None:
-    save_user_data_in_session(request, login_form.cleaned_data['user_login'])
+    # save_user_data_in_session(request, login_form.cleaned_data['user_login'])
+
+    create_custom_session(request, login_form.cleaned_data['user_login'])
 
 
 def do_signup(request: HttpRequest, signup_form: SignUpForm) -> None:
     add_user_in_db(signup_form.cleaned_data)
-    save_user_data_in_session(request, signup_form.cleaned_data['user_login'])    
+    # save_user_data_in_session(request, signup_form.cleaned_data['user_login'])
+
+    create_custom_session(request, signup_form.cleaned_data['user_login'])
 
 
 def save_user_data_in_session(request: HttpRequest, user_login: str) -> None:    
@@ -32,6 +36,8 @@ def save_user_data_in_session(request: HttpRequest, user_login: str) -> None:
     user_id: int = get_user_id_by_login(user_login=user_login)
     save_in_session(request, key='user_id', value=user_id)
 
+def create_custom_session(request: HttpRequest, user_login: str) -> None:
+    request.session_service.create_new_session(user_login)
 
 def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
     user_password: str = cleaned_data['user_password']
@@ -43,7 +49,8 @@ def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
 
 
 def is_loged_in(request: HttpRequest) -> bool:
-    return bool(request.session.get('user_login'))
+    # return bool(request.session.get('user_login'))
+    return request.session_service.is_session_valid
 
 
 def get_home_url() -> str:
@@ -56,7 +63,8 @@ def do_search_location(request: HttpRequest, search_location_form: SearchLocatio
 
 
 def save_user_input_location_name(request: HttpRequest, location_name: str | None) -> None:
-    request.session['user_input_location_name'] = location_name
+    # request.session['user_input_location_name'] = location_name
+    request.session_service['user_input_location_name'] = location_name
 
 
 def save_location_info(request: HttpRequest, search_location_form: SearchLocationForm) -> None:
@@ -64,11 +72,15 @@ def save_location_info(request: HttpRequest, search_location_form: SearchLocatio
     weather_api: OpenWeatherWorks = OpenWeatherWorks()
     weather_api.get_lat_and_lot_by_city(city_name=location_name)
     location_info: dict[str, str | None] | None = weather_api.location_info() # TODO: implement result return with dataclasses?
-    request.session['location_info'] = location_info 
+    # request.session['location_info'] = location_info
+
+    request.session_service['location_info'] = location_info
 
 
 def save_in_session(request: HttpRequest, key: str, value: Any) -> None:
-    request.session[key] = value
+    # request.session[key] = value
+    
+    request.session_service[key] = value
 
 
 def do_add_location(request: HttpRequest) -> None:    
