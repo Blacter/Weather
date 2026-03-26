@@ -36,15 +36,5 @@ class SessionMiddleware:
         else:
             response.delete_cookie('session_id_custom')
             response.delete_cookie('login')
-            # response.set_cookie(
-            #     key='session_id_custom',
-            #     value=session_id,
-            #     httponly=True,
-            # )
-            # response.set_cookie(
-            #     key='login',
-            #     value=login,
-            #     httponly=True,
-            # )
 
         return response

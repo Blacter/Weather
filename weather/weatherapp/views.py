@@ -35,7 +35,6 @@ def index(request: HttpRequest) -> HttpResponse:
     delete_location_form_list: list[DeleteLocationForm] = []
     user_login: str | None = None
     if is_loged_in(request):
-        # user_login = request.session.get('user_login')
         user_login = request.session_service.get_session_id_and_login()[1]
 
         if request.POST:
@@ -43,7 +42,6 @@ def index(request: HttpRequest) -> HttpResponse:
                 request.POST)
             if delete_location_form.is_valid():
                 location_to_delete: str = delete_location_form.cleaned_data['location_name']
-                # do_delete_location(request, request.session.get('user_login'), location_to_delete)
                 do_delete_location(
                     request,
                     user_login,
@@ -61,7 +59,6 @@ def index(request: HttpRequest) -> HttpResponse:
 
     main_page_context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        # 'user_login': request.session.get('user_login'),
         'user_login': user_login,
         'search_location_form': SearchLocationForm(),
         'delete_location_form_list': delete_location_form_list,
@@ -127,7 +124,6 @@ def signup(request: HttpRequest) -> HttpResponse:
 
 def logout(request: HttpRequest) -> HttpResponse:
     if is_loged_in(request):
-        # request.session.flush()
         request.session_service.delete_session()
     return redirect('home')
 
@@ -146,7 +142,6 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
     else:
         search_location_form: SearchLocationForm = SearchLocationForm()
 
-    # location_info: dict[str, Any] = request.session.get('location_info')
     location_info: dict[str, Any] = request.session_service.get(
         'location_info')
     location_name: str = ''
@@ -155,12 +150,10 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        # 'user_login': request.session.get('user_login'),
         'user_login': request.session_service.get_session_id_and_login()[1],
         'search_location_form': search_location_form,
         'add_location_form': AddLocationForm({'location_name': location_name}),
         'location_info': location_info,
-        # 'user_input_location_name': request.session.get('user_input_location_name'),
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }
 
@@ -194,7 +187,6 @@ def add_location(request: HttpRequest) -> HttpResponse:
             messages.error(request, FORM_PRINTS['server_error'])
             status: int = 500
 
-    # location_info: dict[str, Any] = request.session.get('location_info')
     location_info: dict[str, Any] = request.session_service.get(
         'location_info')
     location_name: str = ''
@@ -203,12 +195,10 @@ def add_location(request: HttpRequest) -> HttpResponse:
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        # 'user_login': request.session.get('user_login'),
         'user_login': request.session_service.get('user_login'),
         'search_location_form': SearchLocationForm(),
         'add_location_form': AddLocationForm({'location_name': location_name}),
         'location_info': location_info,
-        # 'user_input_location_name': request.session.get('user_input_location_name'),
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }
 

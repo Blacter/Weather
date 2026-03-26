@@ -29,7 +29,7 @@ class LoginForm(forms.Form):
         if user_login is None:
             return
         try:
-            self.user: User  = User.objects.get(login = user_login)
+            self.user: User = User.objects.get(login=user_login)
         except User.DoesNotExist:
             raise ValidationError(FORM_PRINTS['login_does_not_exist'])
         except OperationalError:
@@ -70,42 +70,44 @@ class LoginForm(forms.Form):
 
 
 class SignUpForm(forms.Form):
-    def clean(self) -> dict[str, Any]: 
-        super().clean() # self.cleaned_data: dict[str, Any] = 
-               
+    def clean(self) -> dict[str, Any]:
+        super().clean()  # self.cleaned_data: dict[str, Any] =
+
         self.check_password_confirmed()
         self.check_user_not_exists()
         # TODO: [check password reliability]
 
-        return self.cleaned_data # ??? Needs to be returned ?
-    
+        return self.cleaned_data  # ??? Needs to be returned ?
+
     def check_password_confirmed(self) -> None:
         user_password: str | None = self.cleaned_data.get('user_password')
-        user_password_confirm: str | None = self.cleaned_data.get('user_password_confirm')
+        user_password_confirm: str | None = self.cleaned_data.get(
+            'user_password_confirm')
 
         if user_password is not None and user_password_confirm is not None \
-            and user_password != user_password_confirm:
+                and user_password != user_password_confirm:
             raise ValidationError(FORM_PRINTS['password_confirm_error_msg'], )
-        
+
     def check_user_not_exists(self) -> None:
         user_login: str | None = self.cleaned_data.get('user_login')
         if user_login is not None and self.is_user_exists():
             raise ValidationError(FORM_PRINTS['user_already_exists_error'])
-        
+
     def is_user_exists(self) -> bool:
         try:
-            users_with_the_login_count = len(User.objects.filter(login = self.cleaned_data['user_login']))
+            users_with_the_login_count = len(
+                User.objects.filter(login=self.cleaned_data['user_login']))
         except OperationalError:
             raise
-        
+
         if users_with_the_login_count >= 1:
             return True
         return False
 
     user_login = forms.CharField(
-        min_length = FORM_PRINTS['login_min_length'],
-        max_length = FORM_PRINTS['login_max_length'],
-        label = FORM_PRINTS['login_label'],
+        min_length=FORM_PRINTS['login_min_length'],
+        max_length=FORM_PRINTS['login_max_length'],
+        label=FORM_PRINTS['login_label'],
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         validators=[
             acceptable_characters
@@ -115,7 +117,7 @@ class SignUpForm(forms.Form):
             'max_length': FORM_PRINTS['login_max_length_error_msg'],
             'required': FORM_PRINTS['login_required_error_msg'],
         })
-    
+
     user_password = forms.CharField(
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
@@ -126,7 +128,7 @@ class SignUpForm(forms.Form):
             'max_length': FORM_PRINTS['password_max_length_error_msg'],
             'required': FORM_PRINTS['password_required_error_msg'],
         })
-    
+
     user_password_confirm = forms.CharField(
         min_length=FORM_PRINTS['password_min_length'],
         max_length=FORM_PRINTS['password_max_length'],
@@ -139,11 +141,11 @@ class SignUpForm(forms.Form):
         })
 
 
-class SearchLocationForm(forms.Form):    
-    def clean(self) -> dict[str, Any]: # FIXME: seems this funtion is useless.
-        self.cleaned_data: dict[str, Any] = super().clean()            
+class SearchLocationForm(forms.Form):
+    def clean(self) -> dict[str, Any]:  # FIXME: seems this funtion is useless.
+        self.cleaned_data: dict[str, Any] = super().clean()
         return self.cleaned_data
-    
+
     location_name = forms.CharField(
         max_length=FORM_PRINTS['location_name_max_length'],
         label=FORM_PRINTS['location_name_label'],
@@ -153,7 +155,7 @@ class SearchLocationForm(forms.Form):
             'required': FORM_PRINTS['field_required_error_msg'],
         }
     )
-    
+
 
 class AddLocationForm(forms.Form):
     def __init__(self, *args, request: HttpRequest | None = None, **kwargs):
@@ -161,28 +163,30 @@ class AddLocationForm(forms.Form):
         super(AddLocationForm, self).__init__(*args, **kwargs)
 
     def clean(self) -> dict[str, Any]:
-        self.my_cleaned_data: dict[str, Any] = super().clean() # FIXME: self.my_clean_data vs self.clean_data
-        # self.set_location_name_from_session(self.request.session)
+        # FIXME: self.my_clean_data vs self.clean_data
+        self.my_cleaned_data: dict[str, Any] = super().clean()
         self.set_location_name_from_session(self.request.session_service)
         self.check_location_name()
         return self.my_cleaned_data
-    
+
     def set_location_name_from_session(self, session) -> None:
         self.location_name_in_session: str = ''
         location_info: dict[str, Any] | None = session.get('location_info')
         if location_info is None:
-            raise ValidationError(FORM_PRINTS['location_addition_error'] + '_1')        
+            raise ValidationError(
+                FORM_PRINTS['location_addition_error'] + '_1')
         self.location_name_in_session: str = location_info.get('location_name')
         if self.location_name_in_session is None:
-            raise ValidationError(FORM_PRINTS['location_addition_error'] + '_2')
-    
+            raise ValidationError(
+                FORM_PRINTS['location_addition_error'] + '_2')
+
     def check_location_name(self):
         if 'location_name' not in self.my_cleaned_data:
             raise ValidationError(FORM_PRINTS['location_addition_error'])
-        
+
         if self.my_cleaned_data['location_name'] != self.location_name_in_session:
             raise ValidationError(FORM_PRINTS['location_addition_error'])
-    
+
     location_name = forms.CharField(
         widget=forms.HiddenInput(),
         max_length=FORM_PRINTS['location_name_max_length'],
@@ -193,7 +197,7 @@ class AddLocationForm(forms.Form):
     )
 
 
-class DeleteLocationForm(forms.Form):    
+class DeleteLocationForm(forms.Form):
     location_name = forms.CharField(
         widget=forms.HiddenInput(),
         max_length=FORM_PRINTS['location_name_max_length'],
@@ -202,4 +206,3 @@ class DeleteLocationForm(forms.Form):
             'required': FORM_PRINTS['field_required_error_msg'],
         },
     )
-    
