@@ -144,6 +144,16 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
 
     location_info: dict[str, Any] = request.session_service.get(
         'location_info')
+    locations_info: dict[str, Any] = request.session_service.get(
+        'locations_info')
+    geocoding_api_response_status_code = request.session_service.get(
+        'geocoding_api_response_status_code')
+
+    if locations_info is not None:
+        print(f'{locations_info[:2]=}')
+    else:
+        print(f'{locations_info=}')
+
     location_name: str = ''
     if location_info:
         location_name: str = location_info.get('location_name')
@@ -154,6 +164,8 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
         'search_location_form': search_location_form,
         'add_location_form': AddLocationForm({'location_name': location_name}),
         'location_info': location_info,
+        'geocoding_api_response_status_code': geocoding_api_response_status_code,
+        'locations_info': locations_info,
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }
 

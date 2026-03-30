@@ -56,3 +56,8 @@ OPEN_WEATHER_PRINTS: dict[str, str|Template] = {
     'weather_by_city': Template(f'https://api.openweathermap.org/data/2.5/weather?q=$city_name&appid={APPID}'),
 }
 
+GEOCODING_PRINTS: dict[str, str|Template] = {
+    'cities_by_name_and_country_code': Template(f'http://api.openweathermap.org/geo/1.0/direct?q=$city_name,$country_code&limit=$limit&appid=$appid'),
+    'cities_by_name': Template(f'http://api.openweathermap.org/geo/1.0/direct?q=$city_name&limit=$limit&appid={APPID}'),
+    'limit': 5,
+}

@@ -59,4 +59,42 @@ search_location_result
 <div class="error">ошибка получения данных.</div>
 {% endif %}
 
+{% if locations_info is none or geocoding_api_response_status_code != 200 %}
+    <div class="error">ошибка получения данных.</div>
+{% elif geocoding_api_response_status_code == 200 and locations_info | length == 0 %}
+    <div class="error">локация с названием {{user_input_location_name}} не найдена.</div>
+{% elif geocoding_api_response_status_code == 200 %}
+    <div class="table-responsive row">
+        {% for location in locations_info %}
+            <div class="mt-4 col-lg-4 col-md-6 col-sm-12">
+                <table class="table table-striped-columns table-hover text-center">
+                    <tr>
+                        <th>Location</th>
+                        <td>{{ location['location_name'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Country</th>
+                        <td>{{ location['country_code'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Lat</th>
+                        <td>{{ location['location_lat'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>Lon</th>
+                        <td>{{ location['location_lon'] }}</td>
+                    </tr>
+                </table>
+                <form action="{{ url('add_location') }}" method="post">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
+                    {{ add_location_form.location_name.as_hidden() }}
+                    <input class="btn btn-primary form-control" type="submit" value="Сохранить">
+                    {% if add_location_form.location_name.errors %}
+                        <div class="form-error">{{add_location_form.location_name.errors.as_text()}}</div>
+                    {% endif %}
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 {% endblock content %}

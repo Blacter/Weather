@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.db.utils import OperationalError
@@ -12,6 +13,7 @@ from django.urls import reverse
 from .forms import LoginForm, SignUpForm, SearchLocationForm, DeleteLocationForm
 from .models import User, Location
 from .open_weather_works import OpenWeatherWorks
+from .geocoding_api import GeocodingAPI
 from .repository.location_works import LocationWorks
 from .repository.utils import get_user_id_by_login, get_locations_by_user_name, delete_location
 from .settings import FORM_PRINTS
@@ -56,9 +58,10 @@ def get_home_url() -> str:
 
 
 def do_search_location(request: HttpRequest, search_location_form: SearchLocationForm) -> None:
-    save_user_input_location_name(
-        request, search_location_form.cleaned_data['location_name'])
+    location_name: str = search_location_form.cleaned_data['location_name']
+    save_user_input_location_name(request, location_name)
     save_location_info(request, search_location_form)
+    save_locations_info(request, location_name)
 
 
 def save_user_input_location_name(request: HttpRequest, location_name: str | None) -> None:
@@ -73,6 +76,13 @@ def save_location_info(request: HttpRequest, search_location_form: SearchLocatio
     location_info: dict[str, str | None] | None = weather_api.location_info()
 
     request.session_service['location_info'] = location_info
+
+
+def save_locations_info(request: HttpRequest, location_name: str | None):
+    geocoding_api: GeocodingAPI = GeocodingAPI(settings.APPID)
+    locations_info: dict | None = geocoding_api.get_cities_by_name(location_name)
+    request.session_service['geocoding_api_response_status_code'] = geocoding_api.response_status_code
+    request.session_service['locations_info'] = locations_info
 
 
 def save_in_session(request: HttpRequest, key: str, value: Any) -> None:
