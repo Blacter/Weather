@@ -7,6 +7,9 @@ LOGIN_MAX_LENGTH: int = 20
 PASSWORD_MIN_LENGTH: int = 4
 PASSWORD_MAX_LENGTH: int = 20
 LOCATION_NAME_MAX_LENGTH: int = 255
+LOCATION_LAT_MAX_LENGTH: int = 15
+LOCATION_LON_MAX_LENGTH: int = 15
+
 
 FORM_PRINTS: dict[str, str|int] = {
     # 'login_contains_wrong_characters': 'недопустимые символы в логине.',
@@ -36,6 +39,12 @@ FORM_PRINTS: dict[str, str|int] = {
     'location_name_max_length': LOCATION_NAME_MAX_LENGTH,
     'location_name_label': 'Введите название города:',
     'location_name_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',
+    
+    'location_lat_max_length': LOCATION_LAT_MAX_LENGTH,
+    # 'location_lat_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',,
+    'location_lon_max_length': LOCATION_LON_MAX_LENGTH,
+    # 'location_lon_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',,
+    
     'search_location_location_exists_error': 'локация уже существует',
     'server_error': 'Server Error, Pleace repead later',
     

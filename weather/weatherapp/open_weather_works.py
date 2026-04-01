@@ -25,6 +25,13 @@ class OpenWeatherWorks:
         self.get_weather_by_lat_and_lon()
         return self.location_temperature
 
+    def get_location_by_lat_and_lon(self, lat: Lat, lon: Lon) -> dict[str, str | None] | None:
+        dict[str, str | None]
+        self.lat: Lat = lat
+        self.lon: Lon = lon
+        self.get_weather_by_lat_and_lon()
+        return self.location_info()
+
     def get_weather_by_lat_and_lon(self) -> None:
         self.set_url_with_lat_and_lon()
         self.get_weather_response_by_lat_and_lon()

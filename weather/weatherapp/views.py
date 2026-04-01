@@ -13,12 +13,16 @@ from django.template.loader import render_to_string
 
 # from weather.jinja2 import environment
 
-from .forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm,  DeleteLocationForm
+from .forms import (
+    LoginForm, SignUpForm, SearchLocationForm, AddLocationForm,  DeleteLocationForm,
+    AddLocationByLatAndLonForm, 
+)
 from .type_aliaces import WeatherInfoList
 from .settings import FORM_PRINTS
 from .utils import (
-    do_login, do_signup, do_search_location, do_add_location, do_delete_location,
-    is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list
+    do_login, do_signup, do_search_location, do_delete_location,
+    is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list,
+    get_add_location_by_lat_and_lon_form_list, do_add_location_by_lat_and_lon
 )
 
 
@@ -142,30 +146,33 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
     else:
         search_location_form: SearchLocationForm = SearchLocationForm()
 
-    location_info: dict[str, Any] = request.session_service.get(
-        'location_info')
+    # location_info: dict[str, Any] = request.session_service.get(
+    #     'location_info')
     locations_info: dict[str, Any] = request.session_service.get(
         'locations_info')
     geocoding_api_response_status_code = request.session_service.get(
         'geocoding_api_response_status_code')
 
     if locations_info is not None:
-        print(f'{locations_info[:2]=}')
+        add_location_by_lat_and_lon_form_list = None
+        add_location_by_lat_and_lon_form_list = get_add_location_by_lat_and_lon_form_list(locations_info)
     else:
         print(f'{locations_info=}')
 
-    location_name: str = ''
-    if location_info:
-        location_name: str = location_info.get('location_name')
+    # location_name: str = ''
+    # if location_info:
+    #     location_name: str = location_info.get('location_name')
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        'user_login': request.session_service.get_session_id_and_login()[1],
+        'user_login': request.session_service.get_session_id_and_login()[1], # request.session_service.login
         'search_location_form': search_location_form,
-        'add_location_form': AddLocationForm({'location_name': location_name}),
-        'location_info': location_info,
+        # 'add_location_form': AddLocationForm({'location_name': location_name}),
+        # 'location_info': location_info,
+
         'geocoding_api_response_status_code': geocoding_api_response_status_code,
         'locations_info': locations_info,
+        'add_location_by_lat_and_lon_form_list': add_location_by_lat_and_lon_form_list,
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }
 
@@ -181,17 +188,18 @@ def add_location(request: HttpRequest) -> HttpResponse:
 
     if request.POST:
         try:
-            add_location_form: AddLocationForm = AddLocationForm(
-                request.POST, request=request)
-            if add_location_form.is_valid():
-                do_add_location(request)
+            add_location_by_lat_and_lon_form: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm(
+                request.POST
+            )
+
+            if add_location_by_lat_and_lon_form.is_valid():
+                do_add_location_by_lat_and_lon(request, add_location_by_lat_and_lon_form.cleaned_data)
                 home_redirect = reverse('home')
                 messages.success(
                     request, message=FORM_PRINTS['location_addition_success'])
                 return redirect(home_redirect)
             else:
-                ValidationError(
-                    FORM_PRINTS['location_addition_error'])  # FIXME!
+                ValidationError(FORM_PRINTS['location_addition_error'])
                 messages.error(request, FORM_PRINTS['location_addition_error'])
         except ValidationError:
             raise
@@ -207,7 +215,7 @@ def add_location(request: HttpRequest) -> HttpResponse:
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        'user_login': request.session_service.get('user_login'),
+        'user_login': request.session_service.login,
         'search_location_form': SearchLocationForm(),
         'add_location_form': AddLocationForm({'location_name': location_name}),
         'location_info': location_info,
