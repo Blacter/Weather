@@ -157,44 +157,44 @@ class SearchLocationForm(forms.Form):
     )
 
 
-class AddLocationForm(forms.Form):
-    def __init__(self, *args, request: HttpRequest | None = None, **kwargs):
-        self.request: HttpRequest = request
-        super(AddLocationForm, self).__init__(*args, **kwargs)
+# class AddLocationForm(forms.Form):
+#     def __init__(self, *args, request: HttpRequest | None = None, **kwargs):
+#         self.request: HttpRequest = request
+#         super(AddLocationForm, self).__init__(*args, **kwargs)
 
-    def clean(self) -> dict[str, Any]:
-        # FIXME: self.my_clean_data vs self.clean_data
-        self.my_cleaned_data: dict[str, Any] = super().clean()
-        self.set_location_name_from_session(self.request.session_service)
-        self.check_location_name()
-        return self.my_cleaned_data
+#     def clean(self) -> dict[str, Any]:
+#         # FIXME: self.my_clean_data vs self.clean_data
+#         self.my_cleaned_data: dict[str, Any] = super().clean()
+#         self.set_location_name_from_session(self.request.session_service)
+#         self.check_location_name()
+#         return self.my_cleaned_data
 
-    def set_location_name_from_session(self, session) -> None:
-        self.location_name_in_session: str = ''
-        location_info: dict[str, Any] | None = session.get('location_info')
-        if location_info is None:
-            raise ValidationError(
-                FORM_PRINTS['location_addition_error'] + '_1')
-        self.location_name_in_session: str = location_info.get('location_name')
-        if self.location_name_in_session is None:
-            raise ValidationError(
-                FORM_PRINTS['location_addition_error'] + '_2')
+#     def set_location_name_from_session(self, session) -> None:
+#         self.location_name_in_session: str = ''
+#         location_info: dict[str, Any] | None = session.get('location_info')
+#         if location_info is None:
+#             raise ValidationError(
+#                 FORM_PRINTS['location_addition_error'] + '_1')
+#         self.location_name_in_session: str = location_info.get('location_name')
+#         if self.location_name_in_session is None:
+#             raise ValidationError(
+#                 FORM_PRINTS['location_addition_error'] + '_2')
 
-    def check_location_name(self):
-        if 'location_name' not in self.my_cleaned_data:
-            raise ValidationError(FORM_PRINTS['location_addition_error'])
+#     def check_location_name(self):
+#         if 'location_name' not in self.my_cleaned_data:
+#             raise ValidationError(FORM_PRINTS['location_addition_error'])
 
-        if self.my_cleaned_data['location_name'] != self.location_name_in_session:
-            raise ValidationError(FORM_PRINTS['location_addition_error'])
+#         if self.my_cleaned_data['location_name'] != self.location_name_in_session:
+#             raise ValidationError(FORM_PRINTS['location_addition_error'])
 
-    location_name = forms.CharField(
-        widget=forms.HiddenInput(),
-        max_length=FORM_PRINTS['location_name_max_length'],
-        error_messages={
-            'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
-            'required': FORM_PRINTS['field_required_error_msg'],
-        },
-    )
+#     location_name = forms.CharField(
+#         widget=forms.HiddenInput(),
+#         max_length=FORM_PRINTS['location_name_max_length'],
+#         error_messages={
+#             'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
+#             'required': FORM_PRINTS['field_required_error_msg'],
+#         },
+#     )
 
 
 class AddLocationByLatAndLonForm(forms.Form):
