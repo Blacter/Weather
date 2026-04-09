@@ -14,15 +14,15 @@ from django.template.loader import render_to_string
 # from weather.jinja2 import environment
 
 from .forms import (
-    LoginForm, SignUpForm, SearchLocationForm, AddLocationForm,  DeleteLocationForm,
-    AddLocationByLatAndLonForm, 
+    LoginForm, SignUpForm, SearchLocationForm,  DeleteLocationForm,
+    AddLocationByLatAndLonForm,
 )
-from .type_aliaces import WeatherInfoList
+from .type_aliaces import WeatherInfoList, StatusCode, LocationsInfo
 from .settings import FORM_PRINTS
 from .utils import (
     do_login, do_signup, do_search_location, do_delete_location,
     is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list,
-    get_add_location_by_lat_and_lon_form_list, do_add_location_by_lat_and_lon
+    get_forms_to_add_locations, do_add_location
 )
 
 
@@ -73,7 +73,7 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def login(request: HttpRequest) -> HttpResponse:
-    status: int = 200
+    status: StatusCode = 200
     if is_loged_in(request):
         home_redirect = get_home_url()
         return redirect(home_redirect)
@@ -137,42 +137,31 @@ def search_location_result(request: HttpRequest) -> HttpResponse:
         login_redirect = reverse('login')
         return redirect(login_redirect)
 
-    if request.GET:
+    geocoding_api_response_status_code: StatusCode = None
+    locations_info: LocationsInfo = None
+
+    if request.POST:
         search_location_form: SearchLocationForm = SearchLocationForm(
-            request.GET)
+            request.POST)
         if search_location_form.is_valid():
-            do_search_location(request, search_location_form)
-            # search_location_result_url: str = reverse('search_location_result')
+            geocoding_api_response_status_code, locations_info = do_search_location(
+                request, search_location_form)
     else:
         search_location_form: SearchLocationForm = SearchLocationForm()
 
-    # location_info: dict[str, Any] = request.session_service.get(
-    #     'location_info')
-    locations_info: dict[str, Any] = request.session_service.get(
-        'locations_info')
-    geocoding_api_response_status_code = request.session_service.get(
-        'geocoding_api_response_status_code')
-
+    location_to_add_forms = None
     if locations_info is not None:
-        add_location_by_lat_and_lon_form_list = None
-        add_location_by_lat_and_lon_form_list = get_add_location_by_lat_and_lon_form_list(locations_info)
-    else:
-        print(f'{locations_info=}')
-
-    # location_name: str = ''
-    # if location_info:
-    #     location_name: str = location_info.get('location_name')
+        location_to_add_forms = get_forms_to_add_locations(
+            locations_info)
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
-        'user_login': request.session_service.get_session_id_and_login()[1], # request.session_service.login
+        'user_login': request.session_service.get_session_id_and_login()[1],
         'search_location_form': search_location_form,
-        # 'add_location_form': AddLocationForm({'location_name': location_name}),
-        # 'location_info': location_info,
 
         'geocoding_api_response_status_code': geocoding_api_response_status_code,
         'locations_info': locations_info,
-        'add_location_by_lat_and_lon_form_list': add_location_by_lat_and_lon_form_list,
+        'add_location_by_lat_and_lon_form_list': location_to_add_forms,
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }
 
@@ -184,16 +173,16 @@ def add_location(request: HttpRequest) -> HttpResponse:
         login_redirect = reverse('login')
         return redirect(login_redirect)
 
-    status: int = 200
+    status: StatusCode = 200
 
     if request.POST:
         try:
             add_location_by_lat_and_lon_form: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm(
-                request.POST
-            )
+                request.POST)
 
             if add_location_by_lat_and_lon_form.is_valid():
-                do_add_location_by_lat_and_lon(request, add_location_by_lat_and_lon_form.cleaned_data)
+                do_add_location(
+                    request, add_location_by_lat_and_lon_form.cleaned_data)
                 home_redirect = reverse('home')
                 messages.success(
                     request, message=FORM_PRINTS['location_addition_success'])
@@ -205,19 +194,15 @@ def add_location(request: HttpRequest) -> HttpResponse:
             raise
         except OperationalError:
             messages.error(request, FORM_PRINTS['server_error'])
-            status: int = 500
+            status: StatusCode = 500
 
-    location_info: dict[str, Any] = request.session_service.get(
+    location_info: LocationsInfo = request.session_service.get(
         'location_info')
-    location_name: str = ''
-    if location_info:
-        location_name: str = location_info.get('location_name')
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
         'user_login': request.session_service.login,
         'search_location_form': SearchLocationForm(),
-        'add_location_form': AddLocationForm({'location_name': location_name}),
         'location_info': location_info,
         'user_input_location_name': request.session_service.get('user_input_location_name'),
     }

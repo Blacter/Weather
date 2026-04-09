@@ -201,18 +201,18 @@ class AddLocationByLatAndLonForm(forms.Form):
     lat = forms.CharField(
         widget=forms.HiddenInput(),
         max_length=FORM_PRINTS['location_lat_max_length'],
-        # error_messages={
-        #     'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
-        #     'required': FORM_PRINTS['field_required_error_msg'],
-        # },
+        error_messages={
+            'required': FORM_PRINTS['location_lat_required_error_msg'],
+            'max_length': FORM_PRINTS['location_lat_max_length_error_msg'],
+        },
     )
     lon = forms.CharField(
         widget=forms.HiddenInput(),
         max_length=FORM_PRINTS['location_lon_max_length'],
-        # error_messages={
-        #     'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
-        #     'required': FORM_PRINTS['field_required_error_msg'],
-        # },
+        error_messages={
+            'max_length': FORM_PRINTS['location_lon_max_length_error_msg'],
+            'required': FORM_PRINTS['location_lon_required_error_msg'],
+        },
     )
 
 
@@ -221,7 +221,7 @@ class DeleteLocationForm(forms.Form):
         widget=forms.HiddenInput(),
         max_length=FORM_PRINTS['location_name_max_length'],
         error_messages={
-            'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
             'required': FORM_PRINTS['field_required_error_msg'],
+            'max_length': FORM_PRINTS['location_name_max_length_error_msg'],
         },
     )

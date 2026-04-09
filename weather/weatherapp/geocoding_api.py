@@ -51,12 +51,6 @@ class GeocodingAPI:
         self._geocoding_response: requests.Response | None = None
 
         try:
-            # print('URL:')
-            # print(self._cities_by_name_url.substitute(
-            #         city_name=self._city_to_get,
-            #         limit=GEOCODING_PRINTS['limit'],
-            #     )
-            # )
             self._geocoding_response = requests.get(
                 self._cities_by_name_url.substitute(
                     city_name=self._city_to_get,

@@ -72,6 +72,8 @@ class SessionService(SessionDataService):
             self._get_session()
             self._is_session_exists = True
             self._check_if_session_valid()
+        except User.DoesNotExist:
+            self._is_session_exists = False
         except Session.DoesNotExist:
             self._is_session_exists = False
         except SessionNotValid:
@@ -107,6 +109,10 @@ class SessionService(SessionDataService):
         # if self._is_session_valid is None:
         return self._is_session_exists and self._is_session_valid
 
+    @property
+    def login(self) -> str:
+        return self._login
+
     def _validate_session_expire_date(self) -> None:
         self._is_session_valid = self._expire_datetime_service.is_expare_at_valid(
             self._session_model.expire_at
@@ -131,7 +137,7 @@ class SessionService(SessionDataService):
             expire_at=expire_date,
             user_id=User.objects.get(login=login)
         )
-        print(f'{self._session_model=}')
+        # print(f'{self._session_model=}')
         self._session_model.save()
         self._session_id = self._session_model.id
         self._login = self._session_model.user_id.login

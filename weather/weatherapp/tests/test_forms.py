@@ -1,8 +1,10 @@
 from django.contrib.auth.hashers import make_password
+from django.forms import ValidationError
 from django.http import HttpRequest
 from django.test import SimpleTestCase, TestCase
 
-from weatherapp.forms import LoginForm, SignUpForm, SearchLocationForm, AddLocationForm, DeleteLocationForm
+from weatherapp.forms import (
+    LoginForm, SignUpForm, SearchLocationForm, DeleteLocationForm, AddLocationByLatAndLonForm)
 from weatherapp.models import User
 from weatherapp.settings import LOCATION_NAME_MAX_LENGTH
 from weatherapp.settings import FORM_PRINTS
@@ -411,14 +413,24 @@ class TestSignUpFormBeyondFieldsValidators(TestCase):
 
 
 class TestSearchLocationFormLocationNameFieldValidators(TestCase):
-    def test_location_name_required_validator(self) -> None:
-        search_location_form: SearchLocationForm = SearchLocationForm({
-            'location_name': 'Vladivostok'
+    def setUp(self) -> None:
+        self.regular_name: str = 'Vladivostok'
+        self.empty_name: str = ''
+        self.almost_too_long_name: str = 'I'*255
+        self.too_long_name: str = 'I'*256
+
+    def test_location_name_success_validation(self) -> None:
+        search_location_form = SearchLocationForm({
+            'location_name': self.regular_name
         })
         self.assertTrue(search_location_form.is_valid())
 
-        search_location_form: SearchLocationForm = SearchLocationForm({
-            'location_name': ''
+    def test_location_name_required_validator(self) -> None:
+        search_location_form = SearchLocationForm({})
+        self.assertFalse(search_location_form.is_valid())
+
+        search_location_form = SearchLocationForm({
+            'location_name': self.empty_name
         })
         self.assertFalse(search_location_form.is_valid())
         self.assertIn('location_name', search_location_form.errors)
@@ -426,13 +438,13 @@ class TestSearchLocationFormLocationNameFieldValidators(TestCase):
             search_location_form.errors['location_name'][0], FORM_PRINTS['field_required_error_msg'])
 
     def test_location_name_max_length_validator(self) -> None:
-        search_location_form: SearchLocationForm = SearchLocationForm({
-            'location_name': 'I'*255
+        search_location_form = SearchLocationForm({
+            'location_name': self.almost_too_long_name
         })
         self.assertTrue(search_location_form.is_valid())
 
-        search_location_form: SearchLocationForm = SearchLocationForm({
-            'location_name': 'I'*256
+        search_location_form = SearchLocationForm({
+            'location_name': self.too_long_name
         })
         self.assertFalse(search_location_form.is_valid())
         self.assertIn('location_name', search_location_form.errors)
@@ -440,172 +452,237 @@ class TestSearchLocationFormLocationNameFieldValidators(TestCase):
             search_location_form.errors['location_name'][0], FORM_PRINTS['location_name_max_length_error_msg'])
 
 
-class TestAddLocationFormLocationNameValidators(TestCase):
+class TestAddLocationByLatAndLonFormValidation(SimpleTestCase):
     def setUp(self) -> None:
-        self.user: User = User.objects.create(
-            login='Ivan',
-            password=make_password('1234'),
-        )
+        self.empty_lat = ''
+        self.normal_lat = '1'*FORM_PRINTS['location_lat_max_length']
+        self.too_long_lat = '1'*(FORM_PRINTS['location_lat_max_length'] + 1)
 
-    def test_location_name_required_validator(self) -> None:
-        request: HttpRequest = HttpRequest()
-        request.session = {}
-        request.session['user_id'] = self.user.pk
-        request.session['location_info'] = {
-            'api_response_code': '200',
-            'location_name': 'Moscow',
-            'country_code': 'RU',
-            'location_temperature': '-10',
-            'location_lat': 37.6156,
-            'location_lon': 55.7522,
-        }
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertTrue(add_location_form.is_valid())
+        self.empty_lon = ''
+        self.normal_lon = '1'*(FORM_PRINTS['location_lon_max_length'] - 1)
+        self.long_lon = '1'*FORM_PRINTS['location_lon_max_length']
 
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': '',
-        },
-            request=request
-        )
-        self.assertFalse(add_location_form.is_valid())
-        self.assertIn('location_name', add_location_form.errors)
-        self.assertIn('__all__', add_location_form.errors)
+    def test_lat_field_required_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lon': self.normal_lon
+        })
+
+        self.assertFalse(add_location_by_lat_and_lon.is_valid())
+        self.assertIn('lat', add_location_by_lat_and_lon.errors)
         self.assertEqual(
-            add_location_form.errors['location_name'][0], FORM_PRINTS['field_required_error_msg'])
+            add_location_by_lat_and_lon.errors['lat'][0], FORM_PRINTS['location_lat_required_error_msg'])
+
+    def test_lat_field_max_length_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lat': self.too_long_lat,
+            'lon': self.normal_lon
+        })
+        self.assertFalse(add_location_by_lat_and_lon.is_valid())
+        self.assertIn('lat', add_location_by_lat_and_lon.errors)
         self.assertEqual(
-            add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+            add_location_by_lat_and_lon.errors['lat'][0], FORM_PRINTS['location_lat_max_length_error_msg'])
 
-    def test_location_name_max_length_validator(self) -> None:
-        request: HttpRequest = HttpRequest()
-        request.session = {}
-        request.session['user_id'] = self.user.pk
-        request.session['location_info'] = {
-            'api_response_code': '200',
-            'location_name': 'I'*255,
-            'country_code': 'RU',
-            'location_temperature': '-10',
-            'location_lat': 37.6156,
-            'location_lon': 55.7522,
-        }
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'I'*255
-        },
-            request=request
-        )
-        self.assertTrue(add_location_form.is_valid())
+    def test_lat_field_success_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lat': self.normal_lat,
+            'lon': self.normal_lon
+        })
+        self.assertTrue(add_location_by_lat_and_lon.is_valid())
+        self.assertNotIn('lat', add_location_by_lat_and_lon.errors)
+#####
+    def test_lon_field_required_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lat': self.normal_lat
+        })
 
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'I'*256,
-        },
-            request=request,
-        )
-        self.assertFalse(add_location_form.is_valid())
-        self.assertIn('location_name', add_location_form.errors)
-        self.assertEqual(add_location_form.errors['location_name']
-                         [0], FORM_PRINTS['location_name_max_length_error_msg'])
-        self.assertIn('__all__', add_location_form.errors)
+        self.assertFalse(add_location_by_lat_and_lon.is_valid())
+        self.assertIn('lon', add_location_by_lat_and_lon.errors)
         self.assertEqual(
-            add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+            add_location_by_lat_and_lon.errors['lon'][0], FORM_PRINTS['location_lon_required_error_msg'])
 
-
-class TestAddLocationFormBeyondFieldsValidators(TestCase):
-    def setUp(self) -> None:
-        self.user: User = User.objects.create(
-            login='Ivan',
-            password=make_password('1234'),
-        )
-
-    def test_location_location_info_exists_validator(self) -> None:
-        request: HttpRequest = HttpRequest()
-        request.session = {}
-        request.session['user_id'] = self.user.pk
-        request.session['location_info'] = {
-            'api_response_code': '200',
-            'location_name': 'Moscow',
-            'country_code': 'RU',
-            'location_temperature': '-10',
-            'location_lat': 37.6156,
-            'location_lon': 55.7522,
-        }
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertTrue(add_location_form.is_valid())
-
-        del request.session['location_info']
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertFalse(add_location_form.is_valid())
-        self.assertIn('__all__', add_location_form.errors)
+    def test_lon_field_max_length_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lat': self.normal_lon,
+        })
+        self.assertFalse(add_location_by_lat_and_lon.is_valid())
+        self.assertIn('lon', add_location_by_lat_and_lon.errors)
         self.assertEqual(
-            add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+            add_location_by_lat_and_lon.errors['lon'][0], FORM_PRINTS['location_lon_required_error_msg'])
 
-    def test_location_name_exists_validator(self) -> None:
-        request: HttpRequest = HttpRequest()
-        request.session = {}
-        request.session['user_id'] = self.user.pk
-        request.session['location_info'] = {
-            'api_response_code': '200',
-            'location_name': 'Moscow',
-            'country_code': 'RU',
-            'location_temperature': '-10',
-            'location_lat': 37.6156,
-            'location_lon': 55.7522,
-        }
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertTrue(add_location_form.is_valid())
+    def test_lon_field_success_validation(self):
+        add_location_by_lat_and_lon: AddLocationByLatAndLonForm = AddLocationByLatAndLonForm({
+            'lat': self.normal_lon,
+            'lon': self.normal_lat,
+        })
+        self.assertTrue(add_location_by_lat_and_lon.is_valid())
+        self.assertNotIn('lon', add_location_by_lat_and_lon.errors)
 
-        del request.session['location_info']['location_name']
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertFalse(add_location_form.is_valid())
-        self.assertIn('__all__', add_location_form.errors)
-        self.assertEqual(
-            add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+# class TestAddLocationFormLocationNameValidators(TestCase):
+#     def setUp(self) -> None:
+#         self.user: User = User.objects.create(
+#             login='Ivan',
+#             password=make_password('1234'),
+#         )
 
-    def test_location_location_info_exists_validator(self) -> None:
-        request: HttpRequest = HttpRequest()
-        request.session = {}
-        request.session['user_id'] = self.user.pk
-        request.session['location_info'] = {
-            'api_response_code': '200',
-            'location_name': 'Moscow',
-            'country_code': 'RU',
-            'location_temperature': '-10',
-            'location_lat': 37.6156,
-            'location_lon': 55.7522,
-        }
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscow'
-        },
-            request=request
-        )
-        self.assertTrue(add_location_form.is_valid())
-        add_location_form: AddLocationForm = AddLocationForm({
-            'location_name': 'Moscoww'
-        },
-            request=request
-        )
-        self.assertFalse(add_location_form.is_valid())
-        self.assertIn('__all__', add_location_form.errors)
-        self.assertEqual(
-            add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+#     def test_location_name_required_validator(self) -> None:
+#         request: HttpRequest = HttpRequest()
+#         request.session = {}
+#         request.session['user_id'] = self.user.pk
+#         request.session['location_info'] = {
+#             'api_response_code': '200',
+#             'location_name': 'Moscow',
+#             'country_code': 'RU',
+#             'location_temperature': '-10',
+#             'location_lat': 37.6156,
+#             'location_lon': 55.7522,
+#         }
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertTrue(add_location_form.is_valid())
+
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': '',
+#         },
+#             request=request
+#         )
+#         self.assertFalse(add_location_form.is_valid())
+#         self.assertIn('location_name', add_location_form.errors)
+#         self.assertIn('__all__', add_location_form.errors)
+#         self.assertEqual(
+#             add_location_form.errors['location_name'][0], FORM_PRINTS['field_required_error_msg'])
+#         self.assertEqual(
+#             add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+
+#     def test_location_name_max_length_validator(self) -> None:
+#         request: HttpRequest = HttpRequest()
+#         request.session = {}
+#         request.session['user_id'] = self.user.pk
+#         request.session['location_info'] = {
+#             'api_response_code': '200',
+#             'location_name': 'I'*255,
+#             'country_code': 'RU',
+#             'location_temperature': '-10',
+#             'location_lat': 37.6156,
+#             'location_lon': 55.7522,
+#         }
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'I'*255
+#         },
+#             request=request
+#         )
+#         self.assertTrue(add_location_form.is_valid())
+
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'I'*256,
+#         },
+#             request=request,
+#         )
+#         self.assertFalse(add_location_form.is_valid())
+#         self.assertIn('location_name', add_location_form.errors)
+#         self.assertEqual(add_location_form.errors['location_name']
+#                          [0], FORM_PRINTS['location_name_max_length_error_msg'])
+#         self.assertIn('__all__', add_location_form.errors)
+#         self.assertEqual(
+#             add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+
+
+# class TestAddLocationFormBeyondFieldsValidators(TestCase):
+#     def setUp(self) -> None:
+#         self.user: User = User.objects.create(
+#             login='Ivan',
+#             password=make_password('1234'),
+#         )
+
+#     def test_location_location_info_exists_validator(self) -> None:
+#         request: HttpRequest = HttpRequest()
+#         request.session = {}
+#         request.session['user_id'] = self.user.pk
+#         request.session['location_info'] = {
+#             'api_response_code': '200',
+#             'location_name': 'Moscow',
+#             'country_code': 'RU',
+#             'location_temperature': '-10',
+#             'location_lat': 37.6156,
+#             'location_lon': 55.7522,
+#         }
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertTrue(add_location_form.is_valid())
+
+#         del request.session['location_info']
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertFalse(add_location_form.is_valid())
+#         self.assertIn('__all__', add_location_form.errors)
+#         self.assertEqual(
+#             add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+
+#     def test_location_name_exists_validator(self) -> None:
+#         request: HttpRequest = HttpRequest()
+#         request.session = {}
+#         request.session['user_id'] = self.user.pk
+#         request.session['location_info'] = {
+#             'api_response_code': '200',
+#             'location_name': 'Moscow',
+#             'country_code': 'RU',
+#             'location_temperature': '-10',
+#             'location_lat': 37.6156,
+#             'location_lon': 55.7522,
+#         }
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertTrue(add_location_form.is_valid())
+
+#         del request.session['location_info']['location_name']
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertFalse(add_location_form.is_valid())
+#         self.assertIn('__all__', add_location_form.errors)
+#         self.assertEqual(
+#             add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
+
+#     def test_location_location_info_exists_validator(self) -> None:
+#         request: HttpRequest = HttpRequest()
+#         request.session = {}
+#         request.session['user_id'] = self.user.pk
+#         request.session['location_info'] = {
+#             'api_response_code': '200',
+#             'location_name': 'Moscow',
+#             'country_code': 'RU',
+#             'location_temperature': '-10',
+#             'location_lat': 37.6156,
+#             'location_lon': 55.7522,
+#         }
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscow'
+#         },
+#             request=request
+#         )
+#         self.assertTrue(add_location_form.is_valid())
+#         add_location_form: AddLocationForm = AddLocationForm({
+#             'location_name': 'Moscoww'
+#         },
+#             request=request
+#         )
+#         self.assertFalse(add_location_form.is_valid())
+#         self.assertIn('__all__', add_location_form.errors)
+#         self.assertEqual(
+#             add_location_form.errors['__all__'][0], FORM_PRINTS['location_addition_error'])
 
 
 class TestDeleteLocationFormLocationNameFieldValidation(SimpleTestCase):

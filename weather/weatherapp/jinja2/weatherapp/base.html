@@ -35,7 +35,7 @@
             </div>
         </div> <!-- row -->
         <div class="row">
-            <form class="input-form" action="{{ url('search_location_result') }}" method="get">
+            <form class="input-form" action="{{ url('search_location_result') }}" method="post"> <!-- get -->
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{csrf_token}}">
                 <div class="form-error">{{search_location_form.non_field_errors()}}</div>
                 <div class="input-form">
