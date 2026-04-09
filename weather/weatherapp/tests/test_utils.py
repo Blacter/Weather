@@ -221,7 +221,6 @@ class TestGetWeatherInfoList(TestCase):
 
 class TestGetLocationsToAddForms(SimpleTestCase):
     def setUp(self) -> None:
-        # set locations_info.
         self.initial_locations_info = [
             {
                 'location_name': 'Liverpool',
@@ -254,42 +253,20 @@ class TestGetLocationsToAddForms(SimpleTestCase):
                 'location_lon': '150.92566'
             },
         ]
-        self.data_for_froms = [
-            {
-                'lat': '53.4071991',
-                'lon': '-2.99168'
-            },
-            {
-                'lat': '29.2949612',
-                'lon': '-95.2788231'
-            },
-            {
-                'lat': '40.3917076',
-                'lon': '-90.0009491'
-            },
-            {
-                'lat': '43.106456',
-                'lon': '-76.217705'
-            },
-            {
-                'lat': '-33.9198252',
-                'lon': '150.92566'
-            },
-        ]
-        self.benchmark_forms = [
-            AddLocationByLatAndLonForm(self.data_for_froms[0]),
-            AddLocationByLatAndLonForm(self.data_for_froms[1]),
-            AddLocationByLatAndLonForm(self.data_for_froms[2]),
-            AddLocationByLatAndLonForm(self.data_for_froms[3]),
-        ]
 
-    def test_get_empty_location_to_add_forms(self) -> None:
+    def test_get_location_to_add_forms(self) -> None:
         result_forms = get_forms_to_add_locations(self.initial_locations_info)
-        for benchmark_form, result_form in zip(self.benchmark_forms, result_forms):
-            benchmark_form.is_valid()
-            result_form.is_valid()
+
+        self.assertEqual(len(self.initial_locations_info), len(result_forms))
+        for initial_location_info, result_form in zip(self.initial_locations_info, result_forms):
+            self.assertTrue(result_form.is_valid())
 
             self.assertEqual(
-                benchmark_form.cleaned_data['lat'], result_form.cleaned_data['lat'])
+                initial_location_info['location_lat'], result_form.cleaned_data['lat'])
             self.assertEqual(
-                benchmark_form.cleaned_data['lon'], result_form.cleaned_data['lon'])
+                initial_location_info['location_lon'], result_form.cleaned_data['lon'])
+
+    def test_empty_input_returns_empty_forms_list(self) -> None:
+        result_forms = get_forms_to_add_locations([])
+
+        self.assertEqual([], result_forms)

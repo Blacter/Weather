@@ -18,7 +18,7 @@ from .geocoding_api import SCHEME, GeocodingAPI
 from .repository.location_works import LocationWorks
 from .repository.utils import get_user_id_by_login, get_locations_by_user_name, delete_location, get_user_by_user_login
 from .settings import FORM_PRINTS
-from .type_aliaces import WeatherInfo, WeatherInfoList, StatusCode, LocationsInfo
+from .type_aliaces import WeatherInfo, WeatherInfoList, StatusCode, LocationsInfo, LocationsInfoNotNull
 
 
 def do_login(request: HttpRequest, login_form: LoginForm) -> None:
@@ -90,8 +90,8 @@ def do_add_location(request: HttpRequest, cleaned_data: dict) -> None:
         Location.objects.create(
             name=location_info['location_name'],
             user_id_id=get_user_id_by_login(request.session_service.login),
-            latitude=location_info['location_lat'],
-            longitude=location_info['location_lon']
+            latitude=lat,
+            longitude=lon
         )
     except OperationalError:
         raise
@@ -132,7 +132,7 @@ def do_delete_location(request: HttpRequest, user_login: str, location_name_to_d
         messages.error(request, FORM_PRINTS['delete_location_does_not_exist'])
 
 
-def get_forms_to_add_locations(locations_info: dict[str, Any]) -> list[AddLocationByLatAndLonForm]:
+def get_forms_to_add_locations(locations_info: LocationsInfoNotNull) -> list[AddLocationByLatAndLonForm]:
     res_list: list[AddLocationByLatAndLonForm] = []
     for location_info in locations_info:
         res_list.append(AddLocationByLatAndLonForm({
