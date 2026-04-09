@@ -40,10 +40,13 @@ FORM_PRINTS: dict[str, str|int] = {
     'location_name_label': 'Введите название города:',
     'location_name_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',
     
+    'location_lat_required_error_msg': 'lat field is required',
     'location_lat_max_length': LOCATION_LAT_MAX_LENGTH,
-    # 'location_lat_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',,
+    'location_lat_max_length_error_msg': f'Недопустимое значение широты. Должно содержать не более {LOCATION_LAT_MAX_LENGTH} символов.',
+    
+    'location_lon_required_error_msg': 'lon field is required',
     'location_lon_max_length': LOCATION_LON_MAX_LENGTH,
-    # 'location_lon_max_length_error_msg': f'слишком длинное название города. Должно содержать не более {LOCATION_NAME_MAX_LENGTH} символов.',,
+    'location_lon_max_length_error_msg': f'Недопустимое значение доллготы. Должно содержать не более {LOCATION_LON_MAX_LENGTH} символов.',
     
     'search_location_location_exists_error': 'локация уже существует',
     'server_error': 'Server Error, Pleace repead later',
