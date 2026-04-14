@@ -175,3 +175,5 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 CURRENT_TIMEZONE: timezone = timezone(timedelta(hours=3))
 
 APPID = settings.APPID
+
+FORCED_LOGIN = False

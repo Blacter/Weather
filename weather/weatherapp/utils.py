@@ -51,6 +51,8 @@ def add_user_in_db(cleaned_data: dict[str, Any]) -> None:
 
 
 def is_loged_in(request: HttpRequest) -> bool:
+    if settings.DEBUG and settings.FORCED_LOGIN:
+        return True
     return request.session_service.is_session_valid
 
 

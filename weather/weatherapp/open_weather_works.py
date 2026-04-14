@@ -138,8 +138,8 @@ class OpenWeatherWorks:
             'location_name': self._location_name,
             'country_code': self._country_code,
             'location_temperature': self._location_temperature,
-            'location_lat': self._location_lat,
-            'location_lon': self._location_lon,
+            # 'location_lat': self._location_lat,
+            # 'location_lon': self._location_lon,
         }
         return info
 

@@ -1,4 +1,5 @@
 from collections import namedtuple
+from pprint import pprint
 from typing import Any
 
 from django.contrib import messages
@@ -73,30 +74,33 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def login(request: HttpRequest) -> HttpResponse:
-    status: StatusCode = 200
+    status_code: StatusCode = 200
     if is_loged_in(request):
         home_redirect = get_home_url()
         return redirect(home_redirect)
 
-    if request.POST:
+    if request.method == 'POST':
         login_form: LoginForm = LoginForm(request.POST)
         try:
-            if login_form and login_form.is_valid():
+            if login_form.is_valid():
                 do_login(request, login_form)
                 home_redirect = reverse('home')
                 return redirect(home_redirect)
+            else:
+                status_code = 400
         except OperationalError:
             messages.error(request, FORM_PRINTS['server_error'])
-            status = 500
+            status_code = 500
     else:
         login_form = LoginForm()
+        status_code = 200
 
     context: dict[str, Any] = {
         'messages': messages.get_messages(request),
         'login_form': login_form,
     }
 
-    return render(request, 'weatherapp/login.html', context=context, status=status)
+    return render(request, 'weatherapp/login.html', context=context, status=status_code)
 
 
 def signup(request: HttpRequest) -> HttpResponse:

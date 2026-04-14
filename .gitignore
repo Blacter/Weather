@@ -4,4 +4,7 @@ __pycache__
 .vscode
 weather/.pytest_cache
 weather/.coverage
+weather/.coveragerc
 weather/htmlcov
+.coverage
+.coveragerc

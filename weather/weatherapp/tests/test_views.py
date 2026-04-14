@@ -1,204 +1,133 @@
+from contextlib import nullcontext as does_not_raise
 from pprint import pprint
 from typing import Any
+from unittest.mock import patch
 
-from bs4 import BeautifulSoup
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
+from django.db.utils import OperationalError
 from django.http import HttpResponse, HttpRequest
 from django.templatetags.static import static
+from django.test import override_settings
 from django.test import TestCase, SimpleTestCase, Client
 from django.urls import reverse
 from jinja2 import Environment, FileSystemLoader, Template
 
-from weatherapp import forms
+from weatherapp.settings import FORM_PRINTS
+from weatherapp.forms import LoginForm
 from weatherapp import views
-from weatherapp.models import User
+from weatherapp.models import User, Session
 from weatherapp.type_aliaces import WeatherInfo
 from weatherapp.type_aliaces import WeatherInfoList
 
 
-class TestViews(TestCase):
+class TestIndexView(SimpleTestCase):
     def setUp(self) -> None:
-        self.client: Client = Client()
-        file_loader = FileSystemLoader('weatherapp/jinja2')
-        self.env = Environment(loader=file_loader)
+        self.client = Client()
+        self.index_url = reverse('home')
 
-    def test_index_view(self) -> None:
-        tm: Template = self.env.get_template('weatherapp/index.html')
-        weather_info_list: WeatherInfoList | None = None
-
-        main_page_context: dict[str, Any] = {
-            'user_login': None,  # None
-            'search_location_form': forms.SearchLocationForm(),
-            'messages': None,
-            'url': reverse,
-            'static': static,
-            'zip': zip,
-            'weather_info_list': [WeatherInfo(  # weather_info_list
-                location_name='l_name',
-                temperature='l_temperature',
-                country_code='l_country',
-            )],  # weather_info_list
-        }
-        content_from_index_template: str = tm.render(**main_page_context)
-
-        index_url: str = reverse('home')
-        response: HttpResponse = self.client.get(index_url)
-
+    def test_without_login(self) -> None:
+        response = self.client.get(self.index_url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content_from_index_template,
-                         response.content.decode())
-
-    # def test_login_view_user_not_logged_in(self) -> None:
-    #     tm: Template = self.env.get_template('weatherapp/login.html')
-    #     login_context: dict[str, Any] = {
-    #         'login_form': forms.LoginForm(),
-    #         'messages': None,
-    #         'url': reverse,
-    #     }
-    #     content_from_login_template: str = tm.render(**login_context)
-
-    #     login_url: str = reverse('login')
-    #     response: HttpResponse = self.client.get(login_url)
-
-    #     response.cookies['session']
-
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(content_from_login_template, response.content.decode())
-
-    # def test_login_view_user_is_logined_in(self) -> None:
-    #     pass
 
 
-# class TestSearchLocationResultView(TestCase):
-#     def setUp(self) -> None:
-#         self.client: Client = Client()
-#         file_loader = FileSystemLoader('weatherapp/jinja2')
-#         self.env = Environment(loader=file_loader)
+class TestLoginView(TestCase):
+    def setUp(self) -> None:
+        self.correct_login_data = {
+            'user_login': 'Anna',
+            'user_password': '1234'
+        }
+        User.objects.create(
+            login=self.correct_login_data['user_login'],
+            password=make_password(self.correct_login_data['user_password']),
+        )
 
-#         self.user_data = {
-#             'login': 'Lisa',
-#             'password': '1234',
-#         }
-#         User.objects.create(
-#             login= self.user_data['login'],
-#             password= make_password(self.user_data['password'])
-#         )
+        self.incorrect_login_data = {
+            'user_login': 'Ivan',
+            'user_password': 'qwer'
+        }
 
-#     def test_user_not_loged_in(self) -> None:
-#         tm_index: Template = self.env.get_template('weatherapp/index.html')
-#         tm_search_location_result: Template = self.env.get_template(
-#             'weatherapp/search_location_result.html')
-#         weather_info_list: WeatherInfoList | None = None
+        self.client = Client()
+        self.login_url = reverse('login')
 
-#         main_page_context: dict[str, Any] = {
-#             'user_login': None,  # None
-#             'search_location_form': forms.SearchLocationForm(),
-#             'messages': None,
-#             'url': reverse,
-#             'static': static,
-#             'zip': zip,
-#             'weather_info_list': [WeatherInfo(  # weather_info_list
-#                 location_name='l_name',
-#                 temperature='l_temperature',
-#                 country_code='l_country',
-#             )],  # weather_info_list
-#         }
+    def test_get_request_to_login_view(self) -> None:
+        response = self.client.get(self.login_url)
 
-#         content_from_index_template: str = tm_index.render(**main_page_context)
-#         search_location_results_url: str = reverse('search_location_result')
-#         response: HttpResponse = self.client.get(
-#             search_location_results_url, follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, Session.objects.count())
 
-#         self.assertEqual(response.status_code, 302)
-#         self.assertEqual(response.headers.get(
-#             'Location'), '/weatherapp/login/')
+    @override_settings(DEBUG=True, FORCED_LOGIN=True)
+    def test_get_login_by_logged_in_user(self) -> None:
+        response = self.client.get(self.login_url)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(reverse('home'), response.headers['Location'])
 
-#     def test_user_regular_case(self) -> None:
-#         # do login
-#         login_url: str = reverse('login')
-#         login_get_response: HttpResponse = self.client.get(login_url)
+    def test_success_login(self) -> None:
+        response = self.client.post(
+            self.login_url,
+            data=self.correct_login_data,
+            follow=False,
+        )
 
-#         # get csrf
-#         login_soup = BeautifulSoup(
-#             login_get_response.content, features='html.parser')
-#         csrf_input_tag = login_soup.find_all('input')[0]
-#         csrf_name = csrf_input_tag['name']
-#         csrf_value = csrf_input_tag['value']
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(reverse('home'), response.headers['Location'])
 
-#         login_input_tag = login_soup.find_all('input')[1]
-#         login_name_attribute = login_input_tag['name']
+        self.assertIn('login', response.cookies)
+        self.assertIn('session_id_custom', response.cookies)
 
-#         password_input_tag = login_soup.find_all('input')[2]
-#         password_name_attribute = password_input_tag['name']
+        self.assertEqual(1,  Session.objects.count())
+        self.assertEqual(
+            self.correct_login_data['user_login'], Session.objects.first().user_id.login)
 
-#         print('Trace begin')
-#         print(f'{csrf_name=}')
-#         print(f'{csrf_value=}')
-#         print(f'{login_name_attribute=}')
-#         print(f'{password_name_attribute=}')
-#         print('Trace end')
-        
-#         data_to_login = {
-#             csrf_name: csrf_value,
-#             login_name_attribute: self.user_data['login'],
-#             password_name_attribute: self.user_data['password']
-#         }
-        
-#         login_post_response: HttpResponse = self.client.post(
-#             login_url,
-#             follow=False,
-#             data=data_to_login,
-#         )
-        
-#         self.user_login_cookie = login_post_response.cookies['login']
-#         self.user_session_id_custom_cookie = login_post_response.cookies['session_id_custom']
-        
-#         # print(f'{login_post_response.status_code=}')
-#         # print(f'{login_post_response.headers=}')
-#         # print(f'{login_post_response.cookies=}')
-#         # print(f'{login_post_response.content.decode('utf-8')=}')
-        
-#         search_location_results_url: str = reverse('search_location_result')
-#         data_to_search_location = {
-            
-#         }
+    def test_login_in_unexisting_profile(self) -> None:
+        response = self.client.post(
+            self.login_url,
+            data=self.incorrect_login_data,
+        )
+        sessions = Session.objects.all()
 
-#         search_location_response: HttpResponse = self.client.post(
-#             search_location_results_url,
-#             data = data_to_search_location,
-#             follow=True,
-#             headers=f'Cookie: login={self.user_data['login']} session_id_custom={self.user_session_id_custom_cookie}'
-#             )
-        
-#         print(f'{search_location_response.status_code=}')
-#         print(f'{search_location_response.headers=}')
-#         print(f'{search_location_response.cookies=}')
-        
+        self.assertContains(response,
+                            FORM_PRINTS['login_does_not_exist'],
+                            status_code=400)
+        self.assertEqual(0, len(sessions))
 
-#         tm_search_location_result: Template = self.env.get_template(
-#             'weatherapp/search_location_result.html')
-#         weather_info_list: WeatherInfoList | None = None
-#         search_location_result_page_context: dict[str, Any] = {
-#             'messages': None,
-#             'user_login': None,
-#             'search_location_form': forms.SearchLocationForm(),
+    def test_login_with_wrong_password(self) -> None:
+        response = self.client.post(
+            self.login_url,
+            data={
+                'user_login': self.correct_login_data['user_login'],
+                'user_password': self.incorrect_login_data['user_password']
+            },
+        )
 
-#             'geocoding_api_response_status_code': 404,
-#             'locations_info': None,
-#             'add_location_by_lat_and_lon_form_list': None,
-#             'user_input_location_name': 'Some Location Name',
+        self.assertContains(response,
+                            FORM_PRINTS['password_wrong_password'],
+                            status_code=400)
 
-#             'url': reverse,
-#             'static': static,
-#             'zip': zip,
-#         }
+        self.assertEqual(0, Session.objects.count())
 
-#         content_from_search_location_result_template: str = tm_search_location_result.render(
-#             **search_location_result_page_context)
-        
-        
+    def test_login_with_empty_post(self) -> None:
+        response = self.client.post(
+            self.login_url,
+            data={}
+        )
 
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(content_from_search_location_result_template,
-#                          response.content.decode())
+        self.assertContains(response,
+                            FORM_PRINTS['login_required_error_msg'],
+                            status_code=400)
+
+    @patch('weatherapp.views.do_login')
+    def test_login_with_operational_error(self, mock_login) -> None:
+        mock_login.side_effect = OperationalError()
+        response = self.client.post(
+            self.login_url,
+            data=self.correct_login_data,
+        )
+
+        self.assertContains(response,
+                            FORM_PRINTS['server_error'],
+                            status_code=500)
+        self.assertEqual(0, Session.objects.count())
+        mock_login.assert_called()
+
