@@ -24,8 +24,28 @@ def get_user_id_by_login(user_login: str) -> int:
         raise
     return user_data.id
 
+async def aget_user_id_by_login(user_login: str) -> int:
+    try:
+        user_data: User = await User.objects.aget(login = user_login)
+    except OperationalError:
+        raise
+    return user_data.id
+
+async def aget_user_id_by_login(user_login: str) -> int:
+    try:
+        user_data: User = await User.objects.aget(login = user_login) # FIXME await?
+    except OperationalError:
+        raise
+    return user_data.id
+
 def get_locations_by_user_name(user_login: str) -> QuerySet[Location]:
     user_id: int = get_user_id_by_login(user_login)
+    res_locations: QuerySet[Location] = Location.objects.filter(user_id=user_id)
+    # print(f'{type(locations_with_user_id)=}')
+    return res_locations
+
+async def aget_locations_by_user_name(user_login: str) -> QuerySet[Location]:
+    user_id: int = await aget_user_id_by_login(user_login)
     res_locations: QuerySet[Location] = Location.objects.filter(user_id=user_id)
     # print(f'{type(locations_with_user_id)=}')
     return res_locations

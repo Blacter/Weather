@@ -1,3 +1,5 @@
+import aiohttp
+# import aiohttp.web_exceptions import
 import requests
 from requests.exceptions import RequestException
 from string import Template
@@ -72,30 +74,30 @@ class OpenWeatherWorks:
             self.weather_response = None
 
     # TODO решить что делать с get_weather_by_city().
-    def get_weather_by_city_name(self, city_name: str) -> None:
+    async def get_weather_by_city_name(self, city_name: str) -> None:
         self.city_name: str = city_name
-        self.get_weather_by_city()
+        await self.get_weather_by_city()
 
     def get_lat_and_lot_by_city(self, city_name: str) -> tuple[Lat, Lon]:
         self.city_name: str = city_name
         self.get_weather_by_city()  # TODO вынести в отдельную функцию?
         return (self.location_lat, self.location_lon)
 
-    def get_weather_by_city(self) -> None:
+    async def get_weather_by_city(self) -> None:
         self.set_url_with_city()
-        self.get_weather_response_by_city()
+        await self.get_weather_response_by_city()
         self.parse_weather()
 
     def set_url_with_city(self) -> None:
         self.url_with_city: str = self.weather_by_city_template.substitute(
             city_name=self.city_name)
 
-    def get_weather_response_by_city(self) -> None:
+    async def get_weather_response_by_city(self) -> None:
         self.weather_response: requests.Response | None
-        try:
-            self.weather_response = requests.get(self.url_with_city)
-        except RequestException:
-            self.weather_response = None
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url = self.url_with_city) as response:
+                self.weather_response =  await response.json()
 
     def parse_weather(self) -> None:
         self.api_response_code: str | None = None
@@ -108,7 +110,7 @@ class OpenWeatherWorks:
         if self.weather_response is None:
             self.api_response_code = None
             return
-        self.weather: Any = self.weather_response.json()
+        self.weather: Any = self.weather_response
 
         self.api_response_code = str(self.weather.get('cod'))
         if self.is_result_to_parse():

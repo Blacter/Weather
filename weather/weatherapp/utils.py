@@ -16,7 +16,8 @@ from .models import User, Location
 from .open_weather_works import OpenWeatherWorks
 from .geocoding_api import SCHEME, GeocodingAPI
 from .repository.location_works import LocationWorks
-from .repository.utils import get_user_id_by_login, get_locations_by_user_name, delete_location, get_user_by_user_login
+from .repository.utils import get_user_id_by_login, delete_location, get_user_by_user_login
+from .repository.utils import  aget_locations_by_user_name
 from .settings import FORM_PRINTS
 from .type_aliaces import WeatherInfo, WeatherInfoList, StatusCode, LocationsInfo, LocationsInfoNotNull
 
@@ -99,13 +100,13 @@ def do_add_location(request: HttpRequest, cleaned_data: dict) -> None:
         raise
 
 
-def get_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInfoList:
-    locations: QuerySet[Location] = get_locations_by_user_name(user_login)
+async def aget_weather_info_list(user_login: str, weather_info_page: int) -> WeatherInfoList:
+    locations: QuerySet[Location] = await aget_locations_by_user_name(user_login)
     weather_api: OpenWeatherWorks = OpenWeatherWorks()
     weather_info_list: WeatherInfoList = []
-
-    for location in locations:
-        weather_api.get_weather_by_city_name(location.name)
+    
+    async for location in locations:
+        await weather_api.get_weather_by_city_name(location.name)
         weather_info: dict[str, str |
                            None] | None = weather_api.location_info()
         weather_info_list.append(WeatherInfo(

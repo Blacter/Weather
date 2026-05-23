@@ -22,7 +22,7 @@ from .type_aliaces import WeatherInfoList, StatusCode, LocationsInfo
 from .settings import FORM_PRINTS
 from .utils import (
     do_login, do_signup, do_search_location, do_delete_location,
-    is_loged_in, get_home_url, get_weather_info_list, get_delete_location_form_list,
+    is_loged_in, get_home_url, aget_weather_info_list, get_delete_location_form_list,
     get_forms_to_add_locations, do_add_location
 )
 
@@ -35,7 +35,7 @@ def server_error(request: HttpRequest) -> HttpResponseNotFound:
     return HttpResponseNotFound('<h1>server error, please, try again later</h1>')
 
 
-def index(request: HttpRequest) -> HttpResponse:
+async def index(request: HttpRequest) -> HttpResponse:
     weather_info_list: WeatherInfoList | None = None
     delete_location_form_list: list[DeleteLocationForm] = []
     user_login: str | None = None
@@ -57,8 +57,8 @@ def index(request: HttpRequest) -> HttpResponse:
                     request, delete_location_form.errors['location_name'][0])
 
         weather_info_page: int = 1
-        weather_info_list = get_weather_info_list(
-            user_login, weather_info_page)
+        # TODO: Вернуть результат из асинхронной функции.
+        weather_info_list = await aget_weather_info_list(user_login, weather_info_page)
         delete_location_form_list = get_delete_location_form_list(
             weather_info_list)
 
